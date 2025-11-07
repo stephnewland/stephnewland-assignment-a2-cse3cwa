@@ -21,13 +21,22 @@ export default function CourtRoomContent({
     <main
       role="main"
       aria-labelledby="court-room-heading"
-      className="px-4 py-8 space-y-6 w-full max-w-4xl min-h-screen bg-cover bg-center bg-no-repeat courtroom-bg"
+      className="px-4 py-8 space-y-6 w-full max-w-4xl min-h-screen"
     >
       <div className="flex flex-col items-center justify-center text-center min-h-[20vh] px-4 space-y-4">
         <h1 id="court-room-heading" className="big-title">
           Court Room Simulation
         </h1>
-        <Timer onTimerEnd={() => {}} />
+
+        <Timer
+          onTimerEnd={() => {}}
+          onTick={(elapsedMs) => {
+            if (stage === 1 && elapsedMs >= 20000) {
+              setStage(2); // Automatically move to Stage 2 after 20 seconds
+            }
+          }}
+        />
+
         <p className="text-lg">
           Current Stage: <strong>{stage}</strong>
         </p>
@@ -41,7 +50,10 @@ export default function CourtRoomContent({
         )}
 
         <div className="w-full mt-4">
-          <MessageQueue onCourtTriggered={onCourtTriggered} />
+          <MessageQueue
+            onCourtTriggered={onCourtTriggered}
+            onFineTriggered={() => setStage(3)} // Automatically move to Stage 3 on first fine
+          />
         </div>
 
         <div className="flex gap-4 mt-4">

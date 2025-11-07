@@ -21,6 +21,7 @@ export interface ActiveMessage extends Message {
 
 export interface MessageQueueProps {
   onCourtTriggered?: () => void;
+  onFineTriggered?: () => void;
 }
 
 export const messages: Message[] = [

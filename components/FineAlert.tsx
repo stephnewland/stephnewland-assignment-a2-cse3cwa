@@ -80,7 +80,14 @@ export default function FineAlert({
     // Optional: Add a subtle red border to draw extra attention
     containerClass += " border-4 border-dashed border-red-500";
   }
-  // 3. All Distractions & Non-Urgent Legal (Lowest Priority) - YELLOW
+
+  // 3. Family Messages - BLUE
+  else if (subtype === "family") {
+    containerClass += isDark
+      ? " bg-blue-900 border-blue-700 text-blue-100"
+      : " bg-blue-100 border-blue-300 text-blue-800";
+  }
+  // 4. All Other Distractions & Non-Urgent Legal - YELLOW
   else {
     containerClass += isDark
       ? " bg-yellow-900 border-yellow-700 text-yellow-100"

@@ -3,7 +3,8 @@
 import { useEffect, useState, useCallback } from "react";
 
 interface TimerProps {
-  onTimerEnd: () => void;
+  onTimerEnd?: () => void;
+  onTick?: (elapsedMs: number) => void;
 }
 
 // Helper to format time as MM:SS (Padded seconds)
@@ -59,13 +60,20 @@ export default function Timer({ onTimerEnd }: TimerProps) {
     if (!isRunning || timeRemaining <= 0) {
       if (timeRemaining === 0 && !isSetupMode) {
         setIsRunning(false);
-        onTimerEnd();
+        onTimerEnd?.();
       }
       return;
     }
 
     const interval = setInterval(() => {
-      setTimeRemaining((prev) => prev - 1);
+      setTimeRemaining((prev) => {
+        if (prev <= 1) {
+          setIsRunning(false);
+          onTimerEnd?.();
+          return 0;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
     return () => clearInterval(interval);
