@@ -116,34 +116,34 @@ export default function MessageQueue({ onCourtTriggered }: MessageQueueProps) {
     if (!hydrated) return;
 
     const distractions = messages.filter((m) => m.type === "distraction");
-    let timeoutId: NodeJS.Timeout;
+    let messageTimeoutId: NodeJS.Timeout | undefined;
+    let initialDelayId: NodeJS.Timeout | undefined;
 
     const scheduleNextMessage = () => {
-      // 1. Calculate a NEW random delay (20s to 30s) for the next message
-      const delay = 20000 + Math.random() * 10000;
-
-      timeoutId = setTimeout(() => {
-        // 2. Pick a random distraction
-        const randomIndex = Math.floor(Math.random() * distractions.length);
-        const randomDistraction = distractions[randomIndex];
-
-        enqueueMessage(randomDistraction);
+      const delay = 20000 + Math.random() * 10000; // 20–30s
+      messageTimeoutId = setTimeout(() => {
+        const random =
+          distractions[Math.floor(Math.random() * distractions.length)];
+        enqueueMessage(random);
         log(
           `Distraction enqueued after ${Math.round(delay / 1000)}s: ${
-            randomDistraction.text
+            random.text
           }`
         );
-
-        // 3. Schedule the NEXT message recursively
-        scheduleNextMessage();
+        scheduleNextMessage(); // recursively schedule next
       }, delay);
     };
 
-    // Start the loop
-    scheduleNextMessage();
+    // ⏳ Start scheduling after 20s
+    initialDelayId = setTimeout(() => {
+      scheduleNextMessage();
+    }, 20000);
 
     // Cleanup: clear the timeout when the component unmounts
-    return () => clearTimeout(timeoutId);
+    return () => {
+      if (initialDelayId) clearTimeout(initialDelayId);
+      if (messageTimeoutId) clearTimeout(messageTimeoutId);
+    };
   }, [hydrated]);
 
   // Legal messages: random initial appearance + escalation
@@ -152,21 +152,30 @@ export default function MessageQueue({ onCourtTriggered }: MessageQueueProps) {
 
     const legalMessages = messages.filter((m) => m.type === "legal");
     const timers: NodeJS.Timeout[] = [];
+    let initialDelayId: NodeJS.Timeout;
 
-    legalMessages.forEach((msg) => {
-      const initialDelay = 10000 + Math.random() * 30000; // appear 10–40s
-      const t = setTimeout(() => {
-        enqueueMessage(msg);
-        log(
-          `Legal message "${msg.text}" appeared after ${Math.round(
-            initialDelay / 1000
-          )}s`
-        );
-      }, initialDelay);
-      timers.push(t);
-    });
+    const scheduleLegalMessages = () => {
+      legalMessages.forEach((msg) => {
+        const delay = 20000 + Math.random() * 10000; // 20–30s
+        const t = setTimeout(() => {
+          enqueueMessage(msg);
+          log(
+            `Legal message "${msg.text}" appeared after ${Math.round(
+              delay / 1000
+            )}s`
+          );
+        }, delay);
+        timers.push(t);
+      });
+    };
 
-    return () => timers.forEach((t) => clearTimeout(t));
+    // ⏳ Start scheduling after 20s
+    initialDelayId = setTimeout(scheduleLegalMessages, 20000);
+
+    return () => {
+      clearTimeout(initialDelayId);
+      timers.forEach((t) => clearTimeout(t));
+    };
   }, [hydrated]);
 
   // Escalation timer: urgent & court
