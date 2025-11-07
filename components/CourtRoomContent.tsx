@@ -27,7 +27,7 @@ export default function CourtRoomContent({
         <h1 id="court-room-heading" className="big-title">
           Court Room Simulation
         </h1>
-        <Timer onTick={() => {}} />
+        <Timer onTimerEnd={() => {}} />
         <p className="text-lg">
           Current Stage: <strong>{stage}</strong>
         </p>
