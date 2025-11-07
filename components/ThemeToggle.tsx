@@ -17,6 +17,11 @@ export default function ThemeToggle() {
       const isDark = savedTheme === "dark" || (!savedTheme && prefersDark);
       setIsDarkMode(isDark);
       document.documentElement.classList.toggle("dark", isDark);
+
+      // ✅ Scoped background image for /court-room
+      if (window.location.pathname === "/court-room") {
+        document.body.classList.add("courtroom-bg");
+      }
     }
   }, []);
 
@@ -27,7 +32,6 @@ export default function ThemeToggle() {
     localStorage.setItem("theme", newMode ? "dark" : "light");
   };
 
-  // Do not render anything until the component has mounted and read the theme
   if (!mounted) return null;
 
   return (

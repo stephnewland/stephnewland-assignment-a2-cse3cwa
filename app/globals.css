@@ -140,3 +140,14 @@ header nav a:focus {
 *::after {
   box-sizing: border-box;
 }
+
+.courtroom-bg {
+  background-image: url("/CourtRoomWorkDeskLight.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.dark .courtroom-bg {
+  background-image: url("/CourtRoomWorkDeskDark.png");
+}
