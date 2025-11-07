@@ -103,10 +103,29 @@ export default function MessageQueue({ onCourtTriggered }: MessageQueueProps) {
   };
 
   const dequeueMessage = (msg: ActiveMessage) => {
-    setActiveMessages((prev) => prev.filter((m) => m.id !== msg.id));
-    log("Dequeued message:", msg);
-  };
+    if (msg.type === "legal" && !msg.urgent) {
+      // Remove the message and schedule it to reappear as urgent
+      setActiveMessages((prev) => prev.filter((m) => m.id !== msg.id));
+      log("Legal message ignored — will reappear as urgent in 2 minutes:", msg);
 
+      setTimeout(() => {
+        const urgentMsg: ActiveMessage = {
+          ...msg,
+          timestamp: Date.now(),
+          urgent: true,
+          urgentTimestamp: Date.now(),
+          escalated: false,
+          text: `urgent ${msg.text}`,
+        };
+        setActiveMessages((prev) => [...prev, urgentMsg]);
+        log("Legal message reappeared as urgent:", urgentMsg);
+      }, 120000); // 2 minutes
+    } else {
+      // Remove non-legal or already urgent messages
+      setActiveMessages((prev) => prev.filter((m) => m.id !== msg.id));
+      log("Dequeued message:", msg);
+    }
+  };
   // Hydration
   useEffect(() => setHydrated(true), []);
 
@@ -179,7 +198,6 @@ export default function MessageQueue({ onCourtTriggered }: MessageQueueProps) {
   }, [hydrated]);
 
   // Escalation timer: urgent & court
-  // MessageQueue.tsx - Escalation timer: urgent & court (FINAL FIX)
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
@@ -203,7 +221,7 @@ export default function MessageQueue({ onCourtTriggered }: MessageQueueProps) {
             log("CRITICAL: Court fine triggered for:", msg.law);
             courtTriggeredForLaw = msg.law;
             messagesToRemove.push(msg.id); // Mark for removal
-            return { ...msg, escalated: true }; // Return the final state temporarily
+            return { ...msg, escalated: true };
           }
         }
 
@@ -222,9 +240,7 @@ export default function MessageQueue({ onCourtTriggered }: MessageQueueProps) {
       });
 
       // 2. Filter to handle removal (fines)
-      const finalMessages = nextMessages.filter(
-        (msg) => !messagesToRemove.includes(msg.id)
-      );
+      const finalMessages = nextMessages;
 
       setActiveMessages(finalMessages);
 
@@ -240,7 +256,6 @@ export default function MessageQueue({ onCourtTriggered }: MessageQueueProps) {
   return (
     <div
       // Remove min-h-screen and p-4 from here, and apply absolute/fixed positioning
-      // Use 'fixed' to keep the messages visible even if the user scrolls the main content
       className="message-queue fixed top-4 right-4 h-full w-full max-w-sm pointer-events-none"
     >
       <div className="flex flex-col space-y-4 items-end pointer-events-auto max-h-screen overflow-y-auto">
@@ -251,7 +266,7 @@ export default function MessageQueue({ onCourtTriggered }: MessageQueueProps) {
             message={msg.text || "Default message"}
             law={msg.type === "legal" && msg.escalated ? msg.law ?? "" : ""}
             onClose={() => dequeueMessage(msg)}
-            // --- Prop Passing (as previously fixed) ---
+            // Prop Passing
             type={msg.type}
             subtype={msg.subtype}
             escalated={!!msg.escalated}
