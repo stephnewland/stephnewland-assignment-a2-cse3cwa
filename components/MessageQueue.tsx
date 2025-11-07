@@ -232,7 +232,7 @@ export default function MessageQueue({ onCourtTriggered }: MessageQueueProps) {
             ...msg,
             urgent: true,
             urgentTimestamp: Date.now(),
-            text: `urgent ${msg.text}`,
+            text: `URGENT ${msg.text}`,
           };
         }
 

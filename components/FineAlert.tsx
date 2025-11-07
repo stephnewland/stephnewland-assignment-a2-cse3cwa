@@ -118,7 +118,7 @@ export default function FineAlert({
         {icon}
 
         {escalated && type === "legal" ? (
-          <span className="ml-2">Courtroom **FINE** issued!</span>
+          <span className="ml-2">Courtroom Fine!</span>
         ) : null}
       </p>
 
