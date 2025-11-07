@@ -22,6 +22,7 @@ export interface ActiveMessage extends Message {
 export interface MessageQueueProps {
   onCourtTriggered?: () => void;
   onFineTriggered?: () => void;
+  onFineClosed?: () => void;
 }
 
 export const messages: Message[] = [
@@ -85,7 +86,11 @@ export const messages: Message[] = [
   },
 ];
 
-export default function MessageQueue({ onCourtTriggered }: MessageQueueProps) {
+export default function MessageQueue({
+  onCourtTriggered,
+  onFineTriggered,
+  onFineClosed,
+}: MessageQueueProps) {
   const [activeMessages, setActiveMessages] = useState<ActiveMessage[]>([]);
   const messageIdRef = useRef(0);
   const [hydrated, setHydrated] = useState(false);
@@ -198,34 +203,46 @@ export default function MessageQueue({ onCourtTriggered }: MessageQueueProps) {
   }, [hydrated]);
 
   // Escalation timer: urgent & court
+  // Escalation timer: urgent & court
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
       let courtTriggeredForLaw: string | undefined;
-      let messagesToRemove: string[] = []; // Track IDs to remove
 
-      // 1. Map to handle updates (urgent status)
       const nextMessages = activeMessages.map((msg) => {
+        log(
+          "Checking escalation for:",
+          msg.text,
+          "Urgent:",
+          msg.urgent,
+          "Escalated:",
+          msg.escalated
+        );
+
         if (msg.type !== "legal" || msg.escalated) {
           return msg;
         }
 
         const firstEscalationTime = msg.timestamp + (msg.escalateAfter ?? 0);
 
-        // CHECK FOR COURT FINE (ESCALATION)
+        // Escalate to fine
         if (msg.urgent) {
           const secondEscalationTime =
             (msg.urgentTimestamp ?? firstEscalationTime) + 120000;
 
+          const timeLeft = secondEscalationTime - now;
+          log(
+            `Time left until fine: ${Math.max(0, Math.round(timeLeft / 1000))}s`
+          );
+
           if (now >= secondEscalationTime) {
             log("CRITICAL: Court fine triggered for:", msg.law);
             courtTriggeredForLaw = msg.law;
-            messagesToRemove.push(msg.id); // Mark for removal
             return { ...msg, escalated: true };
           }
         }
 
-        // CHECK FOR URGENT STATUS
+        // Escalate to urgent
         if (!msg.urgent && now >= firstEscalationTime) {
           log("Message becoming urgent:", msg.text);
           return {
@@ -239,34 +256,31 @@ export default function MessageQueue({ onCourtTriggered }: MessageQueueProps) {
         return msg;
       });
 
-      // 2. Filter to handle removal (fines)
-      const finalMessages = nextMessages;
+      setActiveMessages(nextMessages);
 
-      setActiveMessages(finalMessages);
-
-      // 3. Trigger the court event after state is set
       if (courtTriggeredForLaw) {
         onCourtTriggered?.();
       }
     }, 1000);
 
     return () => clearInterval(interval);
-  }, [activeMessages, onCourtTriggered]); // Add activeMessages to dependency array
+  }, [activeMessages, onCourtTriggered]);
 
+  // Render fine alerts
   return (
-    <div
-      // Remove min-h-screen and p-4 from here, and apply absolute/fixed positioning
-      className="message-queue fixed top-4 right-4 h-full w-full max-w-sm pointer-events-none"
-    >
+    <div className="message-queue fixed top-4 right-4 h-full w-full max-w-sm pointer-events-none">
       <div className="flex flex-col space-y-4 items-end pointer-events-auto max-h-screen overflow-y-auto">
-        {/*<div className="flex flex-col space-y-4 items-end pointer-events-auto"*/}
         {activeMessages.map((msg) => (
           <FineAlert
             key={generateKey(msg)}
             message={msg.text || "Default message"}
             law={msg.type === "legal" && msg.escalated ? msg.law ?? "" : ""}
-            onClose={() => dequeueMessage(msg)}
-            // Prop Passing
+            onClose={() => {
+              dequeueMessage(msg);
+              if (msg.escalated && onFineClosed) {
+                onFineClosed(); // Revert background when fine is dismissed
+              }
+            }}
             type={msg.type}
             subtype={msg.subtype}
             escalated={!!msg.escalated}

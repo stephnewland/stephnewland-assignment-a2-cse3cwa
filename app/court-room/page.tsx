@@ -38,13 +38,8 @@ export default function CourtRoom() {
   }, []);
 
   return (
-    <main
-      className="flex-grow bg-cover bg-center bg-no-repeat min-h-screen transition-[background-image] duration-700"
-      style={{ backgroundImage: `url(${bgImage})` }}
-    >
-      <div className="min-h-screen w-full bg-white/60 dark:bg-black/55 transition-colors duration-300 flex flex-col items-center justify-center">
-        <CourtRoomContent onCourtTriggered={handleCourtTriggered} />
-      </div>
-    </main>
+    <div className="min-h-screen w-full flex flex-col items-center justify-center">
+      <CourtRoomContent onCourtTriggered={handleCourtTriggered} />
+    </div>
   );
 }
