@@ -126,7 +126,7 @@ export default function FineAlert({
 
       {type === "legal" && escalated && law ? (
         <p className="text-sm font-mono mb-3">
-          Broke: <strong>{law}</strong>
+          Law Broken: <strong>{law}</strong>
         </p>
       ) : null}
 

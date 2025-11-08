@@ -7,15 +7,13 @@ export default function CourtRoom() {
   const [bgImage, setBgImage] = useState("/CourtRoomWorkDeskLight.png");
 
   const handleCourtTriggered = () => {
-    // Show penalty background for 10 seconds
     setBgImage("/CourtRoomStageLight.png");
-
     setTimeout(() => {
       const isDark = document.documentElement.classList.contains("dark");
       setBgImage(
         isDark ? "/CourtRoomWorkDeskDark.png" : "/CourtRoomWorkDeskLight.png"
       );
-    }, 10000);
+    }, 5000);
   };
 
   useEffect(() => {
@@ -31,15 +29,18 @@ export default function CourtRoom() {
       attributes: true,
       attributeFilter: ["class"],
     });
-
     updateBackground();
-
     return () => observer.disconnect();
   }, []);
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center">
-      <CourtRoomContent onCourtTriggered={handleCourtTriggered} />
-    </div>
+    <main
+      className="flex-grow bg-cover bg-center bg-no-repeat min-h-screen transition-all duration-300"
+      style={{ backgroundImage: `url(${bgImage})` }}
+    >
+      <div className="min-h-screen w-full bg-white/60 dark:bg-black/55 transition-colors duration-300 flex flex-col items-center justify-center">
+        <CourtRoomContent onCourtTriggered={handleCourtTriggered} />
+      </div>
+    </main>
   );
 }
