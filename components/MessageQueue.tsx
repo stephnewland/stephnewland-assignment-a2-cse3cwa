@@ -250,7 +250,8 @@ export default function MessageQueue({
             type={msg.type}
             subtype={msg.subtype}
             escalated={!!msg.escalated}
-            isUrgent={!!msg.urgent} // urgent messages now have role="alert"
+            isUrgent={!!msg.urgent}
+            role="alertdialog"
           />
         ))}
       </div>

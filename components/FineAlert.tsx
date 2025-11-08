@@ -10,6 +10,7 @@ export interface FineAlertProps {
   subtype?: "family" | "boss" | "agile";
   escalated?: boolean;
   isUrgent?: boolean;
+  role?: string;
 }
 
 // Function to determine the icon based on the message details
@@ -35,7 +36,7 @@ const getActionText = (
   if (subtype === "family") {
     return "👍 OK";
   }
-  return "✅ Fixed"; // Default for any uncategorized message
+  return "✅ Fixed"; // Default for any uncategorised message
 };
 
 export default function FineAlert({
@@ -46,6 +47,7 @@ export default function FineAlert({
   escalated,
   isUrgent,
   onClose,
+  role,
 }: FineAlertProps) {
   const [isDark, setIsDark] = useState(false);
 
