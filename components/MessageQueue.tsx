@@ -259,6 +259,7 @@ export default function MessageQueue({
       setActiveMessages(nextMessages);
 
       if (courtTriggeredForLaw) {
+        // fires fine background change
         onCourtTriggered?.();
       }
     }, 1000);

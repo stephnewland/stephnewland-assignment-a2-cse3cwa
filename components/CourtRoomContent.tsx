@@ -21,7 +21,7 @@ export default function CourtRoomContent({
     <main
       role="main"
       aria-labelledby="court-room-heading"
-      className="px-4 py-8 space-y-6 w-full max-w-4xl min-h-screen bg-cover bg-center bg-no-repeat courtroom-bg"
+      className="px-4 py-8 space-y-6 w-full max-w-4xl min-h-screen"
     >
       <div className="flex flex-col items-center justify-center text-center min-h-[20vh] px-4 space-y-4">
         <h1 id="court-room-heading" className="big-title">
