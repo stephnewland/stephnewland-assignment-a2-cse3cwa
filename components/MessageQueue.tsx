@@ -21,7 +21,6 @@ export interface ActiveMessage extends Message {
 
 export interface MessageQueueProps {
   onCourtTriggered?: () => void;
-  onFineTriggered?: () => void;
   onFineClosed?: () => void;
 }
 
@@ -90,35 +89,39 @@ export const messages: Message[] = [
 
 export default function MessageQueue({
   onCourtTriggered,
-  onFineTriggered,
   onFineClosed,
 }: MessageQueueProps) {
   const [activeMessages, setActiveMessages] = useState<ActiveMessage[]>([]);
   const messageIdRef = useRef(0);
+  const finesTriggeredRef = useRef<Set<string>>(new Set());
   const [hydrated, setHydrated] = useState(false);
 
   const log = (...args: any[]) => console.debug("[MessageQueue]", ...args);
+
   const generateKey = (msg: ActiveMessage) =>
     `${msg.id}-${msg.timestamp}-${messageIdRef.current}`;
 
   // ----------------------
-  // Add message to queue
   const enqueueMessage = (msg: Message) => {
     const timestamp = Date.now();
-    const activeMsg: ActiveMessage = { ...msg, timestamp };
+    const activeMsg: ActiveMessage = {
+      ...msg,
+      timestamp,
+      urgent: false,
+      escalated: false,
+    };
     messageIdRef.current += 1;
     setActiveMessages((prev) => [...prev, activeMsg]);
     log("Enqueued message:", activeMsg);
   };
 
-  // ----------------------
-  // Remove message and handle escalation
   const dequeueMessage = (msg: ActiveMessage) => {
-    if (msg.type === "legal" && !msg.urgent) {
-      // remove and schedule urgent
-      setActiveMessages((prev) => prev.filter((m) => m.id !== msg.id));
-      log("Legal message ignored — will reappear as urgent in 2 minutes:", msg);
+    setActiveMessages((prev) =>
+      prev.filter((m) => m.timestamp !== msg.timestamp)
+    );
 
+    // Reschedule legal messages if they are not yet escalated
+    if (msg.type === "legal" && !msg.escalated && !msg.urgent) {
       setTimeout(() => {
         const urgentMsg: ActiveMessage = {
           ...msg,
@@ -130,107 +133,78 @@ export default function MessageQueue({
         };
         setActiveMessages((prev) => [...prev, urgentMsg]);
         log("Legal message reappeared as urgent:", urgentMsg);
-      }, 120000); // 2 minutes
-    } else {
-      setActiveMessages((prev) => prev.filter((m) => m.id !== msg.id));
-      log("Dequeued message:", msg);
+      }, msg.escalateAfter ?? 120000);
     }
   };
 
-  // Hydration
+  // ----------------------
   useEffect(() => setHydrated(true), []);
 
-  // ----------------------
-  // Scheduler: mix all messages (legal + distractions) every 20–30s
+  // ---------------------- Random scheduler
   useEffect(() => {
     if (!hydrated) return;
-    const allMessages = messages;
-    let messageTimeoutId: NodeJS.Timeout;
-
+    let timeoutId: NodeJS.Timeout;
     const scheduleNext = () => {
-      const delay = 20000 + Math.random() * 10000; // 20–30s
-      messageTimeoutId = setTimeout(() => {
-        // randomly pick a message from all types
-        const random =
-          allMessages[Math.floor(Math.random() * allMessages.length)];
-        enqueueMessage(random);
-        log(
-          `Scheduled message after ${Math.round(delay / 1000)}s:`,
-          random.text
-        );
+      const delay = 20000 + Math.random() * 10000;
+      timeoutId = setTimeout(() => {
+        const randomMsg = messages[Math.floor(Math.random() * messages.length)];
+        enqueueMessage(randomMsg);
         scheduleNext();
       }, delay);
     };
-
     scheduleNext();
-
-    return () => {
-      if (messageTimeoutId) clearTimeout(messageTimeoutId);
-    };
+    return () => clearTimeout(timeoutId);
   }, [hydrated]);
 
-  // ----------------------
-  // Escalation timer: urgent & court
+  // ---------------------- Urgent → escalated → fine logic
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
-      let courtTriggeredForLaw: string | undefined;
+      let courtTriggered = false;
 
-      const nextMessages = activeMessages.map((msg) => {
-        log(
-          "Checking escalation for:",
-          msg.text,
-          "Urgent:",
-          msg.urgent,
-          "Escalated:",
-          msg.escalated,
-          "urgentTimestamp:",
-          msg.urgentTimestamp,
-          "now:",
-          now
-        );
+      setActiveMessages((prev) =>
+        prev.map((msg) => {
+          if (msg.type !== "legal" || msg.escalated) return msg;
 
-        if (msg.type !== "legal" || msg.escalated) return msg;
+          const firstEscalation = msg.timestamp + (msg.escalateAfter ?? 0);
 
-        const firstEscalationTime = msg.timestamp + (msg.escalateAfter ?? 0);
-
-        // escalate to fine
-        if (msg.urgent) {
-          const secondEscalationTime =
-            (msg.urgentTimestamp ?? firstEscalationTime) + 120000;
-          if (now >= secondEscalationTime) {
-            log("CRITICAL: Court fine triggered for:", msg.law);
-            courtTriggeredForLaw = msg.law;
-            return { ...msg, escalated: true };
+          // Escalate to urgent
+          if (!msg.urgent && now >= firstEscalation) {
+            log("Message becoming urgent:", msg.text);
+            return {
+              ...msg,
+              urgent: true,
+              urgentTimestamp: now,
+              text: `URGENT ${msg.text}`,
+            };
           }
-        }
 
-        // escalate to urgent if not already
-        if (!msg.urgent && now >= firstEscalationTime) {
-          log("Message becoming urgent:", msg.text);
-          return {
-            ...msg,
-            urgent: true,
-            urgentTimestamp: now,
-            text: `URGENT ${msg.text}`,
-          };
-        }
+          // Escalate to court fine
+          if (msg.urgent) {
+            const secondEscalation =
+              (msg.urgentTimestamp ?? firstEscalation) + 120000;
+            if (
+              now >= secondEscalation &&
+              !finesTriggeredRef.current.has(msg.id)
+            ) {
+              finesTriggeredRef.current.add(msg.id);
+              courtTriggered = true;
+              log("CRITICAL: Court fine triggered for:", msg.law);
+              return { ...msg, escalated: true };
+            }
+          }
 
-        return msg;
-      });
+          return msg;
+        })
+      );
 
-      setActiveMessages(nextMessages);
-
-      if (courtTriggeredForLaw) onCourtTriggered?.();
+      if (courtTriggered) onCourtTriggered?.();
     }, 1000);
 
     return () => clearInterval(interval);
   }, [activeMessages, onCourtTriggered]);
 
-  console.log("Active Messages:", activeMessages);
-
-  // ----------------------
-  // Render fine alerts with ARIA live region
+  // ---------------------- Render FineAlerts
   return (
     <div
       className="message-queue fixed top-4 right-4 h-full w-full max-w-sm pointer-events-none"
@@ -245,7 +219,10 @@ export default function MessageQueue({
             law={msg.type === "legal" && msg.escalated ? msg.law ?? "" : ""}
             onClose={() => {
               dequeueMessage(msg);
-              if (msg.escalated && onFineClosed) onFineClosed(); // overlay disappears only on dismissal
+              if (msg.escalated) {
+                finesTriggeredRef.current.delete(msg.id);
+                onFineClosed?.();
+              }
             }}
             type={msg.type}
             subtype={msg.subtype}

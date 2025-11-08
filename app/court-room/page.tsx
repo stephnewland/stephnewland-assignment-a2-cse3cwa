@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import CourtRoomContent from "@/components/CourtRoomContent";
 
 export default function CourtRoom() {
-  // Track if fine stage is active (overlay stays until fine dismissed)
+  // Track if fine stage is active (used for fade overlay)
   const [isFineActive, setIsFineActive] = useState(false);
 
   // Background images for desk and fine stage
@@ -13,7 +13,15 @@ export default function CourtRoom() {
 
   // Callback for when a fine is issued
   const handleCourtTriggered = () => {
-    setIsFineActive(true); // overlay appears
+    const isDark = document.documentElement.classList.contains("dark");
+
+    // Step 1: Set the fine/court background overlay
+    setIsFineActive(true);
+
+    // Step 2: Revert to normal background after 10 seconds
+    setTimeout(() => {
+      setIsFineActive(false);
+    }, 10000);
   };
 
   // Detect dark/light mode and update background images accordingly
@@ -31,10 +39,11 @@ export default function CourtRoom() {
     const observer = new MutationObserver(updateBackground);
     observer.observe(document.documentElement, {
       attributes: true,
-      attributeFilter: ["class"], // watch for dark mode toggle
+      // Watch for dark mode class
+      attributeFilter: ["class"],
     });
 
-    // Initial update
+    // Initial check
     updateBackground();
 
     return () => observer.disconnect();
@@ -48,7 +57,7 @@ export default function CourtRoom() {
         style={{ backgroundImage: `url(${deskBg})` }}
       />
 
-      {/* Fine Background overlay */}
+      {/* Fine Background overlay (opacity controlled) */}
       <div
         className={`absolute inset-0 bg-center bg-no-repeat bg-cover transition-opacity duration-700 pointer-events-none ${
           isFineActive ? "opacity-100" : "opacity-0"
@@ -65,10 +74,7 @@ export default function CourtRoom() {
 
       {/* Content overlay */}
       <div className="relative min-h-screen w-full bg-white/60 dark:bg-black/55 flex flex-col items-center justify-center transition-colors duration-300">
-        <CourtRoomContent
-          onCourtTriggered={handleCourtTriggered}
-          onFineClosed={() => setIsFineActive(false)} // overlay stays until FineAlert dismissed
-        />
+        <CourtRoomContent onCourtTriggered={handleCourtTriggered} />
       </div>
     </main>
   );

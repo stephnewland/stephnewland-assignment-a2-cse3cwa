@@ -11,44 +11,250 @@ interface CourtRoomContentProps {
 
 export default function CourtRoomContent({
   onCourtTriggered,
-  onFineClosed, // <-- add this
+  onFineClosed,
 }: CourtRoomContentProps) {
   const [stage, setStage] = useState(1);
 
+  // ------------------------ Code for each stage
+  const [stage1Code, setStage1Code] = useState(`<img src="/logo.png">`);
+  const [stage2Code, setStage2Code] = useState(
+    `function validateInput(input) { return input.includes('@'); }`
+  );
+  const [stage3Code, setStage3Code] = useState(
+    `<form><input type="text"><input type="password"><button>Login</button></form>`
+  );
+  const [stage4Code, setStage4Code] = useState(
+    `const db = connect("mongodb://admin:password@localhost:27017/app");`
+  );
+  const [stage5Code, setStage5Code] = useState(
+    `function login(username, password) { /* TODO */ }`
+  );
+  const [stage6Code, setStage6Code] = useState(
+    `const query = "SELECT * FROM users WHERE id=" + userId;`
+  );
+  const [stage7Code, setStage7Code] = useState(
+    `document.querySelector('h1').style.color = 'blue';`
+  );
+  const [stage8Code] = useState(`// Compliance checklist`);
+
+  // ------------------------ Background / Fine state
+  const [deskBg, setDeskBg] = useState("/CourtRoomWorkDeskLight.png");
+  const [fineBg, setFineBg] = useState("/CourtRoomStageLight.png");
+  const [isFineActive, setIsFineActive] = useState(false);
+
+  // ------------------------ Dark/Light mode background observer
   useEffect(() => {
-    document.cookie = "lastTab=court-room; path=/";
+    const updateBackground = () => {
+      const isDark = document.documentElement.classList.contains("dark");
+      setDeskBg(
+        isDark ? "/CourtRoomWorkDeskDark.png" : "/CourtRoomWorkDeskLight.png"
+      );
+      setFineBg(
+        isDark ? "/CourtRoomStageDark.png" : "/CourtRoomStageLight.png"
+      );
+    };
+
+    const observer = new MutationObserver(updateBackground);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    });
+
+    updateBackground(); // initial check
+    return () => observer.disconnect();
   }, []);
 
+  // ------------------------ Mark Fixed validation
+  const handleMarkFixed = () => {
+    let isValid = false;
+    switch (stage) {
+      case 1:
+        isValid = /<img [^>]*alt=["'][^"']*["']/.test(stage1Code);
+        break;
+      case 2:
+        isValid = !stage2Code.includes("return input.includes('@')");
+        break;
+      case 3:
+        isValid = stage3Code.includes("<label") && stage3Code.includes("input");
+        break;
+      case 4:
+        isValid = !stage4Code.includes("password");
+        break;
+      case 5:
+        isValid = stage5Code.trim().length > 0;
+        break;
+      case 6:
+        isValid =
+          stage6Code.includes("db.query") ||
+          stage6Code.includes("parameterised");
+        break;
+      case 7:
+        isValid =
+          stage7Code.trim() !==
+          `document.querySelector('h1').style.color = 'blue';`;
+        break;
+      case 8:
+        isValid = true;
+        break;
+    }
+    if (isValid) setStage((prev) => Math.min(prev + 1, 8));
+    else alert("⚠️ Please apply the fix correctly before advancing!");
+  };
+
+  // ------------------------ Stage renderer
+  const renderStage = (
+    title: string,
+    instructions: string,
+    code: string,
+    onChange: (val: string) => void,
+    hint: string
+  ) => (
+    <div className="w-full text-left bg-white/20 dark:bg-black/20 p-4 rounded-lg shadow-md">
+      <p className="text-xl font-semibold mb-2">{title}</p>
+      <p className="mb-2">{instructions}</p>
+      <textarea
+        className="w-full bg-gray-900 text-white p-2 rounded text-sm font-mono"
+        rows={6}
+        value={code}
+        onChange={(e) => onChange(e.target.value)}
+      />
+      <p className="text-gray-400 mt-2 mb-2">💡 Hint: {hint}</p>
+      <button
+        onClick={handleMarkFixed}
+        className="mt-2 px-4 py-2 bg-green-600 hover:bg-green-700 rounded text-white"
+      >
+        Mark Fixed
+      </button>
+    </div>
+  );
+
+  // ------------------------ Fine handlers (triggered by MessageQueue)
+  // ✅ One-time background change, stays until resolved
+  const handleCourtTriggered = () => {
+    if (!isFineActive) {
+      setIsFineActive(true);
+      if (onCourtTriggered) onCourtTriggered();
+    }
+  };
+
+  const handleFineClosed = () => {
+    if (isFineActive) {
+      setIsFineActive(false);
+      if (onFineClosed) onFineClosed();
+    }
+  };
+
+  // ------------------------ Render
   return (
     <main
       role="main"
       aria-labelledby="court-room-heading"
-      className="px-4 py-8 space-y-6 w-full max-w-4xl min-h-screen"
+      className="relative min-h-screen flex-grow overflow-hidden"
     >
-      <div className="flex flex-col items-center justify-center text-center min-h-[20vh] px-4 space-y-4">
-        <h1 id="court-room-heading" className="big-title">
+      {/* Desk Background */}
+      <div
+        className="absolute inset-0 bg-center bg-no-repeat bg-cover transition-all duration-700"
+        style={{ backgroundImage: `url(${deskBg})` }}
+      />
+
+      {/* Fine Background overlay */}
+      <div
+        className={`absolute inset-0 bg-center bg-no-repeat bg-cover transition-opacity duration-700 pointer-events-none ${
+          isFineActive ? "opacity-100" : "opacity-0"
+        }`}
+        style={{ backgroundImage: `url(${fineBg})` }}
+      />
+
+      {/* Red tint overlay */}
+      <div
+        className={`absolute inset-0 bg-red-500 transition-opacity duration-700 pointer-events-none ${
+          isFineActive ? "opacity-20" : "opacity-0"
+        }`}
+      />
+
+      <div className="relative min-h-screen w-full bg-white/60 dark:bg-black/55 flex flex-col items-center justify-center px-4 py-8 space-y-6 max-w-4xl">
+        <h1 id="court-room-heading" className="big-title text-center">
           Court Room Simulation
         </h1>
+
         <Timer onTimerEnd={() => {}} />
+
         <p className="text-lg">
-          Current Stage: <strong>{stage}</strong>
+          Current Stage: <strong>{stage}</strong> / 8
         </p>
 
-        {stage === 1 && <p>🛠️ Stage 1: Debug the code below...</p>}
-        {stage === 2 && (
-          <p>🛠️ Stage 2: Continue debugging and watch for messages...</p>
-        )}
-        {stage === 3 && (
-          <p>🔐 Stage 3: Fix accessibility and security issues...</p>
+        {/* Render current stage */}
+        {stage === 1 &&
+          renderStage(
+            "🧩 Stage 1: Debugging HTML",
+            "Fix broken or missing alt attributes:",
+            stage1Code,
+            setStage1Code,
+            'Include an alt="" attribute in your <img> tag.'
+          )}
+        {stage === 2 &&
+          renderStage(
+            "⚙️ Stage 2: Input Validation",
+            "Strengthen validation function:",
+            stage2Code,
+            setStage2Code,
+            "Use regex or stronger checks."
+          )}
+        {stage === 3 &&
+          renderStage(
+            "🔐 Stage 3: Secure Login Form",
+            "Make this form secure and accessible:",
+            stage3Code,
+            setStage3Code,
+            "Add labels and ensure inputs are accessible."
+          )}
+        {stage === 4 &&
+          renderStage(
+            "🧱 Stage 4: Secure Database Connection",
+            "Review DB connection code:",
+            stage4Code,
+            setStage4Code,
+            "Remove hardcoded passwords."
+          )}
+        {stage === 5 &&
+          renderStage(
+            "📦 Stage 5: Fix User Login",
+            "Ensure error handling:",
+            stage5Code,
+            setStage5Code,
+            "Handle errors properly."
+          )}
+        {stage === 6 &&
+          renderStage(
+            "🔒 Stage 6: Secure Database Fixes",
+            "Protect against SQL injection:",
+            stage6Code,
+            setStage6Code,
+            "Use parameterised queries."
+          )}
+        {stage === 7 &&
+          renderStage(
+            "📝 Stage 7: Agile Requests",
+            "Apply requested UI changes:",
+            stage7Code,
+            setStage7Code,
+            "Make meaningful code changes."
+          )}
+        {stage === 8 && (
+          <div className="w-full text-left bg-white/20 dark:bg-black/20 p-4 rounded-lg shadow-md">
+            Compliance review stage
+          </div>
         )}
 
+        {/* ---------------- MessageQueue integrated ---------------- */}
         <div className="w-full mt-4">
           <MessageQueue
-            onCourtTriggered={onCourtTriggered}
-            onFineClosed={onFineClosed}
+            onCourtTriggered={handleCourtTriggered}
+            onFineClosed={handleFineClosed}
           />
         </div>
 
+        {/* Navigation buttons */}
         <div className="flex gap-4 mt-4">
           {stage > 1 && (
             <button
@@ -58,9 +264,9 @@ export default function CourtRoomContent({
               Previous Stage
             </button>
           )}
-          {stage < 3 && (
+          {stage < 8 && (
             <button
-              onClick={() => setStage((prev) => Math.min(prev + 1, 3))}
+              onClick={() => setStage((prev) => Math.min(prev + 1, 8))}
               className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white"
             >
               Next Stage

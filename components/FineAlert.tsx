@@ -47,7 +47,6 @@ export default function FineAlert({
   escalated,
   isUrgent,
   onClose,
-  role,
 }: FineAlertProps) {
   const [isDark, setIsDark] = useState(false);
 
