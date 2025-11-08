@@ -6,10 +6,12 @@ import Timer from "./Timer";
 
 interface CourtRoomContentProps {
   onCourtTriggered?: () => void;
+  onFineClosed?: () => void;
 }
 
 export default function CourtRoomContent({
   onCourtTriggered,
+  onFineClosed, // <-- add this
 }: CourtRoomContentProps) {
   const [stage, setStage] = useState(1);
 
@@ -41,7 +43,10 @@ export default function CourtRoomContent({
         )}
 
         <div className="w-full mt-4">
-          <MessageQueue onCourtTriggered={onCourtTriggered} />
+          <MessageQueue
+            onCourtTriggered={onCourtTriggered}
+            onFineClosed={onFineClosed}
+          />
         </div>
 
         <div className="flex gap-4 mt-4">

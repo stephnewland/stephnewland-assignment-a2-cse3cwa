@@ -245,13 +245,12 @@ export default function MessageQueue({
             law={msg.type === "legal" && msg.escalated ? msg.law ?? "" : ""}
             onClose={() => {
               dequeueMessage(msg);
-              if (msg.escalated && onFineClosed) onFineClosed();
+              if (msg.escalated && onFineClosed) onFineClosed(); // overlay disappears only on dismissal
             }}
             type={msg.type}
             subtype={msg.subtype}
             escalated={!!msg.escalated}
             isUrgent={!!msg.urgent}
-            role="alertdialog"
           />
         ))}
       </div>
