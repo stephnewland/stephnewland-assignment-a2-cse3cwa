@@ -4,18 +4,10 @@ import { useEffect, useState } from "react";
 import MessageQueue from "./MessageQueue";
 import Timer from "./Timer";
 
-interface CourtRoomContentProps {
-  onCourtTriggered?: () => void;
-  onFineClosed?: () => void;
-}
-
-export default function CourtRoomContent({
-  onCourtTriggered,
-  onFineClosed,
-}: CourtRoomContentProps) {
+export default function CourtRoomContent() {
   const [stage, setStage] = useState(1);
 
-  // ------------------------ Code for each stage
+  // Stage codes
   const [stage1Code, setStage1Code] = useState(`<img src="/logo.png">`);
   const [stage2Code, setStage2Code] = useState(
     `function validateInput(input) { return input.includes('@'); }`
@@ -37,12 +29,15 @@ export default function CourtRoomContent({
   );
   const [stage8Code] = useState(`// Compliance checklist`);
 
-  // ------------------------ Background / Fine state
+  // Background / Fine state
   const [deskBg, setDeskBg] = useState("/CourtRoomWorkDeskLight.png");
   const [fineBg, setFineBg] = useState("/CourtRoomStageLight.png");
   const [isFineActive, setIsFineActive] = useState(false);
 
-  // ------------------------ Dark/Light mode background observer
+  // Current law for display
+  const [currentLaw, setCurrentLaw] = useState<string | null>(null);
+
+  // ---------------- Hydration & dark/light background observer
   useEffect(() => {
     const updateBackground = () => {
       const isDark = document.documentElement.classList.contains("dark");
@@ -60,11 +55,11 @@ export default function CourtRoomContent({
       attributeFilter: ["class"],
     });
 
-    updateBackground(); // initial check
+    updateBackground();
     return () => observer.disconnect();
   }, []);
 
-  // ------------------------ Mark Fixed validation
+  // ---------------- Mark Fixed validation
   const handleMarkFixed = () => {
     let isValid = false;
     switch (stage) {
@@ -101,7 +96,7 @@ export default function CourtRoomContent({
     else alert("⚠️ Please apply the fix correctly before advancing!");
   };
 
-  // ------------------------ Stage renderer
+  // ---------------- Stage renderer
   const renderStage = (
     title: string,
     instructions: string,
@@ -128,36 +123,23 @@ export default function CourtRoomContent({
     </div>
   );
 
-  // ------------------------ Fine handlers (triggered by MessageQueue)
-  // ✅ One-time background change, stays until resolved
-  const handleCourtTriggered = () => {
-    if (!isFineActive) {
-      setIsFineActive(true);
-      if (onCourtTriggered) onCourtTriggered();
-    }
+  // ---------------- Fine handlers
+  const handleCourtTriggered = (law?: string) => {
+    setIsFineActive(true);
+    setCurrentLaw(law ?? null);
   };
-
   const handleFineClosed = () => {
-    if (isFineActive) {
-      setIsFineActive(false);
-      if (onFineClosed) onFineClosed();
-    }
+    setIsFineActive(false);
+    setCurrentLaw(null);
   };
 
-  // ------------------------ Render
   return (
     <main
       role="main"
       aria-labelledby="court-room-heading"
       className="relative min-h-screen flex-grow overflow-hidden"
     >
-      {/* Desk Background */}
-      <div
-        className="absolute inset-0 bg-center bg-no-repeat bg-cover transition-all duration-700"
-        style={{ backgroundImage: `url(${deskBg})` }}
-      />
-
-      {/* Fine Background overlay */}
+      {/* Fine Background */}
       <div
         className={`absolute inset-0 bg-center bg-no-repeat bg-cover transition-opacity duration-700 pointer-events-none ${
           isFineActive ? "opacity-100" : "opacity-0"
@@ -165,16 +147,17 @@ export default function CourtRoomContent({
         style={{ backgroundImage: `url(${fineBg})` }}
       />
 
-      {/* Red tint overlay */}
+      {/* Red overlay */}
       <div
         className={`absolute inset-0 bg-red-500 transition-opacity duration-700 pointer-events-none ${
           isFineActive ? "opacity-20" : "opacity-0"
         }`}
       />
 
-      <div className="relative min-h-screen w-full bg-white/60 dark:bg-black/55 flex flex-col items-center justify-center px-4 py-8 space-y-6 max-w-4xl">
+      {/* Main content */}
+      <div className="relative w-full flex flex-col items-center px-4 py-8 space-y-6 max-w-4xl z-20">
         <h1 id="court-room-heading" className="big-title text-center">
-          Court Room Simulation
+          {isFineActive ? "⚖️ Court Fine Issued!" : "Court Room Simulation"}
         </h1>
 
         <Timer onTimerEnd={() => {}} />
@@ -183,7 +166,7 @@ export default function CourtRoomContent({
           Current Stage: <strong>{stage}</strong> / 8
         </p>
 
-        {/* Render current stage */}
+        {/* Render stages */}
         {stage === 1 &&
           renderStage(
             "🧩 Stage 1: Debugging HTML",
@@ -246,15 +229,13 @@ export default function CourtRoomContent({
           </div>
         )}
 
-        {/* ---------------- MessageQueue integrated ---------------- */}
-        <div className="w-full mt-4">
-          <MessageQueue
-            onCourtTriggered={handleCourtTriggered}
-            onFineClosed={handleFineClosed}
-          />
-        </div>
+        {/* MessageQueue */}
+        <MessageQueue
+          onCourtTriggered={handleCourtTriggered}
+          onFineClosed={handleFineClosed}
+        />
 
-        {/* Navigation buttons */}
+        {/* Navigation */}
         <div className="flex gap-4 mt-4">
           {stage > 1 && (
             <button
