@@ -1,15 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
 
-interface FineAlertProps {
+export interface FineAlertProps {
   message: string;
   law?: string;
-  type: "legal" | "distraction";
+  onClose: () => void;
+  type?: "legal" | "distraction";
   subtype?: "family" | "boss" | "agile";
   escalated?: boolean;
   isUrgent?: boolean;
-  onClose: () => void; // This function is triggered for any action
 }
 
 // Function to determine the icon based on the message details
@@ -24,7 +24,7 @@ const getMessageIcon = (props: FineAlertProps) => {
   return "📩"; // generic new messages or non-urgent legal (Yellow)
 };
 
-// NEW: Function to determine the text for the primary action button
+// Function to determine the text for the primary action button
 const getActionText = (
   type: "legal" | "distraction",
   subtype?: "family" | "boss" | "agile"
@@ -49,7 +49,7 @@ export default function FineAlert({
 }: FineAlertProps) {
   const [isDark, setIsDark] = useState(false);
 
-  // Dark mode observer...
+  // Dark mode observer
   useEffect(() => {
     const root = document.documentElement;
     const observer = new MutationObserver(() => {
@@ -65,36 +65,32 @@ export default function FineAlert({
   let buttonBaseClass =
     "px-3 py-1 rounded font-semibold transition-colors duration-200";
 
-  // 1. Final Fine (Escalated Legal) - RED (Highest Priority)
+  // 1. Final Fine (Escalated Legal) - RED
   if (escalated && type === "legal") {
     containerClass += isDark
       ? " bg-red-700 border-red-600 text-red-100"
       : " bg-red-100 border-red-400 text-red-800";
   }
-  // 2. Urgent Legal Message - ORANGE (Medium Priority)
+  // 2. Urgent Legal Message - ORANGE
   else if (isUrgent && type === "legal") {
     containerClass += isDark
       ? " bg-orange-700 border-orange-600 text-orange-100"
       : " bg-orange-200 border-orange-400 text-orange-900";
-
-    // Optional: Add a subtle red border to draw extra attention
     containerClass += " border-4 border-dashed border-red-500";
   }
-
   // 3. Family Messages - BLUE
   else if (subtype === "family") {
     containerClass += isDark
       ? " bg-blue-900 border-blue-700 text-blue-100"
       : " bg-blue-100 border-blue-300 text-blue-800";
   }
-  // 4. All Other Distractions & Non-Urgent Legal - YELLOW
+  // 4. Other Distractions / Non-Urgent Legal - YELLOW
   else {
     containerClass += isDark
       ? " bg-yellow-900 border-yellow-700 text-yellow-100"
       : " bg-yellow-100 border-yellow-300 text-yellow-800";
   }
 
-  // Define specific button styles
   const fixButtonClass = " bg-green-500 hover:bg-green-600 text-white";
   const ignoreButtonClass = " bg-gray-500 hover:bg-gray-600 text-white";
   const closeButtonClass = " bg-blue-500 hover:bg-blue-600 text-white";
@@ -109,14 +105,17 @@ export default function FineAlert({
     onClose,
   });
 
-  const actionText = getActionText(type, subtype); // Get the dynamic text
+  const actionText = getActionText(type!, subtype);
 
   return (
-    <div className={`${containerClass}`}>
-      {/* 1. HEADER CONTENT */}
+    <div
+      className={`${containerClass}`}
+      role={isUrgent ? "alert" : undefined} // urgent messages are announced immediately
+      aria-live={isUrgent ? "assertive" : undefined}
+    >
+      {/* HEADER */}
       <p className="font-bold mb-2">
-        {icon}
-
+        {icon}{" "}
         {escalated && type === "legal" ? (
           <span className="ml-2">Courtroom Fine!</span>
         ) : null}
@@ -130,9 +129,8 @@ export default function FineAlert({
         </p>
       ) : null}
 
-      {/* 2. INLINE ACTION BUTTONS - CENTERED */}
+      {/* INLINE ACTION BUTTONS */}
       <div className="flex gap-2 justify-center mt-4">
-        {/* IGNORE Button (Leftmost in the group) */}
         <button
           onClick={onClose}
           className={`${buttonBaseClass} ${ignoreButtonClass}`}
@@ -140,7 +138,7 @@ export default function FineAlert({
         >
           ❌ Ignore
         </button>
-        {/* FIX/OK Button (Middle) - Uses dynamic text */}
+
         <button
           onClick={onClose}
           className={`${buttonBaseClass} ${fixButtonClass}`}
@@ -148,7 +146,7 @@ export default function FineAlert({
         >
           {actionText}
         </button>
-        {/* CLOSE Button (Rightmost) */}
+
         <button
           onClick={onClose}
           className={`${buttonBaseClass} ${closeButtonClass}`}

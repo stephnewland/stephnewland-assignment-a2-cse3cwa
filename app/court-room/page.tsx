@@ -4,53 +4,75 @@ import { useEffect, useState } from "react";
 import CourtRoomContent from "@/components/CourtRoomContent";
 
 export default function CourtRoom() {
-  // Current background image
-  const [bgImage, setBgImage] = useState("/CourtRoomWorkDeskLight.png");
+  // Track if fine stage is active (used for fade overlay)
+  const [isFineActive, setIsFineActive] = useState(false);
+
+  // Background images for desk and fine stage
+  const [deskBg, setDeskBg] = useState("/CourtRoomWorkDeskLight.png");
+  const [fineBg, setFineBg] = useState("/CourtRoomStageLight.png");
 
   // Callback for when a fine is issued
   const handleCourtTriggered = () => {
     const isDark = document.documentElement.classList.contains("dark");
-    // Step 1: Set the fine/court background
-    setBgImage(isDark ? "/CourtRoomStageDark.png" : "/CourtRoomStageLight.png");
 
-    // Step 2: Revert to normal background after 5 seconds
+    // Step 1: Set the fine/court background overlay
+    setIsFineActive(true);
+
+    // Step 2: Revert to normal background after 10 seconds
     setTimeout(() => {
-      const isDark = document.documentElement.classList.contains("dark");
-      setBgImage(
-        isDark ? "/CourtRoomWorkDeskDark.png" : "/CourtRoomWorkDeskLight.png"
-      );
+      setIsFineActive(false);
     }, 10000);
   };
 
-  // Detect dark/light mode and update background accordingly
+  // Detect dark/light mode and update background images accordingly
   useEffect(() => {
     const updateBackground = () => {
       const isDark = document.documentElement.classList.contains("dark");
-      setBgImage(
+      setDeskBg(
         isDark ? "/CourtRoomWorkDeskDark.png" : "/CourtRoomWorkDeskLight.png"
+      );
+      setFineBg(
+        isDark ? "/CourtRoomStageDark.png" : "/CourtRoomStageLight.png"
       );
     };
 
     const observer = new MutationObserver(updateBackground);
     observer.observe(document.documentElement, {
       attributes: true,
-      //wtach for dark mode class
+      // Watch for dark mode class
       attributeFilter: ["class"],
     });
 
-    // initial check
+    // Initial check
     updateBackground();
+
     return () => observer.disconnect();
   }, []);
 
   return (
     <main className="relative min-h-screen flex-grow overflow-hidden">
-      {/* Background layer */}
+      {/* Desk Background layer */}
       <div
         className="absolute inset-0 bg-center bg-no-repeat bg-cover transition-all duration-700"
-        style={{ backgroundImage: `url(${bgImage})` }}
+        style={{ backgroundImage: `url(${deskBg})` }}
       />
-      {/* Content layer */}
+
+      {/* Fine Background overlay (opacity controlled) */}
+      <div
+        className={`absolute inset-0 bg-center bg-no-repeat bg-cover transition-opacity duration-700 pointer-events-none ${
+          isFineActive ? "opacity-100" : "opacity-0"
+        }`}
+        style={{ backgroundImage: `url(${fineBg})` }}
+      />
+
+      {/* Red tint overlay during fine stage */}
+      <div
+        className={`absolute inset-0 bg-red-500 transition-opacity duration-700 pointer-events-none ${
+          isFineActive ? "opacity-20" : "opacity-0"
+        }`}
+      />
+
+      {/* Content overlay */}
       <div className="relative min-h-screen w-full bg-white/60 dark:bg-black/55 flex flex-col items-center justify-center transition-colors duration-300">
         <CourtRoomContent onCourtTriggered={handleCourtTriggered} />
       </div>

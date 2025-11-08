@@ -14,7 +14,7 @@ export interface Message {
 
 export interface ActiveMessage extends Message {
   timestamp: number; // first appearance
-  urgentTimestamp?: number; // when urgent applied
+  urgentTimestamp?: number;
   urgent?: boolean;
   escalated?: boolean;
 }
@@ -25,6 +25,8 @@ export interface MessageQueueProps {
   onFineClosed?: () => void;
 }
 
+// ----------------------
+// Message pool
 export const messages: Message[] = [
   {
     id: "imgAlt",
@@ -99,6 +101,8 @@ export default function MessageQueue({
   const generateKey = (msg: ActiveMessage) =>
     `${msg.id}-${msg.timestamp}-${messageIdRef.current}`;
 
+  // ----------------------
+  // Add message to queue
   const enqueueMessage = (msg: Message) => {
     const timestamp = Date.now();
     const activeMsg: ActiveMessage = { ...msg, timestamp };
@@ -107,9 +111,11 @@ export default function MessageQueue({
     log("Enqueued message:", activeMsg);
   };
 
+  // ----------------------
+  // Remove message and handle escalation
   const dequeueMessage = (msg: ActiveMessage) => {
     if (msg.type === "legal" && !msg.urgent) {
-      // Remove the message and schedule it to reappear as urgent
+      // remove and schedule urgent
       setActiveMessages((prev) => prev.filter((m) => m.id !== msg.id));
       log("Legal message ignored — will reappear as urgent in 2 minutes:", msg);
 
@@ -120,89 +126,50 @@ export default function MessageQueue({
           urgent: true,
           urgentTimestamp: Date.now(),
           escalated: false,
-          text: `urgent ${msg.text}`,
+          text: `URGENT ${msg.text}`,
         };
         setActiveMessages((prev) => [...prev, urgentMsg]);
         log("Legal message reappeared as urgent:", urgentMsg);
       }, 120000); // 2 minutes
     } else {
-      // Remove non-legal or already urgent messages
       setActiveMessages((prev) => prev.filter((m) => m.id !== msg.id));
       log("Dequeued message:", msg);
     }
   };
+
   // Hydration
   useEffect(() => setHydrated(true), []);
 
-  // Distractions: random 20-30s
-  // ------------------------
+  // ----------------------
+  // Scheduler: mix all messages (legal + distractions) every 20–30s
   useEffect(() => {
     if (!hydrated) return;
+    const allMessages = messages;
+    let messageTimeoutId: NodeJS.Timeout;
 
-    const distractions = messages.filter((m) => m.type === "distraction");
-    let messageTimeoutId: NodeJS.Timeout | undefined;
-    let initialDelayId: NodeJS.Timeout | undefined;
-
-    const scheduleNextMessage = () => {
+    const scheduleNext = () => {
       const delay = 20000 + Math.random() * 10000; // 20–30s
       messageTimeoutId = setTimeout(() => {
+        // randomly pick a message from all types
         const random =
-          distractions[Math.floor(Math.random() * distractions.length)];
+          allMessages[Math.floor(Math.random() * allMessages.length)];
         enqueueMessage(random);
         log(
-          `Distraction enqueued after ${Math.round(delay / 1000)}s: ${
-            random.text
-          }`
+          `Scheduled message after ${Math.round(delay / 1000)}s:`,
+          random.text
         );
-        scheduleNextMessage(); // recursively schedule next
+        scheduleNext();
       }, delay);
     };
 
-    // ⏳ Start scheduling after 20s
-    initialDelayId = setTimeout(() => {
-      scheduleNextMessage();
-    }, 20000);
+    scheduleNext();
 
-    // Cleanup: clear the timeout when the component unmounts
     return () => {
-      if (initialDelayId) clearTimeout(initialDelayId);
       if (messageTimeoutId) clearTimeout(messageTimeoutId);
     };
   }, [hydrated]);
 
-  // Legal messages: random initial appearance + escalation
-  useEffect(() => {
-    if (!hydrated) return;
-
-    const legalMessages = messages.filter((m) => m.type === "legal");
-    const timers: NodeJS.Timeout[] = [];
-    let initialDelayId: NodeJS.Timeout;
-
-    const scheduleLegalMessages = () => {
-      legalMessages.forEach((msg) => {
-        const delay = 20000 + Math.random() * 10000; // 20–30s
-        const t = setTimeout(() => {
-          enqueueMessage(msg);
-          log(
-            `Legal message "${msg.text}" appeared after ${Math.round(
-              delay / 1000
-            )}s`
-          );
-        }, delay);
-        timers.push(t);
-      });
-    };
-
-    // ⏳ Start scheduling after 20s
-    initialDelayId = setTimeout(scheduleLegalMessages, 20000);
-
-    return () => {
-      clearTimeout(initialDelayId);
-      timers.forEach((t) => clearTimeout(t));
-    };
-  }, [hydrated]);
-
-  // Escalation timer: urgent & court
+  // ----------------------
   // Escalation timer: urgent & court
   useEffect(() => {
     const interval = setInterval(() => {
@@ -216,25 +183,21 @@ export default function MessageQueue({
           "Urgent:",
           msg.urgent,
           "Escalated:",
-          msg.escalated
+          msg.escalated,
+          "urgentTimestamp:",
+          msg.urgentTimestamp,
+          "now:",
+          now
         );
 
-        if (msg.type !== "legal" || msg.escalated) {
-          return msg;
-        }
+        if (msg.type !== "legal" || msg.escalated) return msg;
 
         const firstEscalationTime = msg.timestamp + (msg.escalateAfter ?? 0);
 
-        // Escalate to fine
+        // escalate to fine
         if (msg.urgent) {
           const secondEscalationTime =
             (msg.urgentTimestamp ?? firstEscalationTime) + 120000;
-
-          const timeLeft = secondEscalationTime - now;
-          log(
-            `Time left until fine: ${Math.max(0, Math.round(timeLeft / 1000))}s`
-          );
-
           if (now >= secondEscalationTime) {
             log("CRITICAL: Court fine triggered for:", msg.law);
             courtTriggeredForLaw = msg.law;
@@ -242,13 +205,13 @@ export default function MessageQueue({
           }
         }
 
-        // Escalate to urgent
+        // escalate to urgent if not already
         if (!msg.urgent && now >= firstEscalationTime) {
           log("Message becoming urgent:", msg.text);
           return {
             ...msg,
             urgent: true,
-            urgentTimestamp: Date.now(),
+            urgentTimestamp: now,
             text: `URGENT ${msg.text}`,
           };
         }
@@ -258,18 +221,22 @@ export default function MessageQueue({
 
       setActiveMessages(nextMessages);
 
-      if (courtTriggeredForLaw) {
-        // fires fine background change
-        onCourtTriggered?.();
-      }
+      if (courtTriggeredForLaw) onCourtTriggered?.();
     }, 1000);
 
     return () => clearInterval(interval);
   }, [activeMessages, onCourtTriggered]);
 
-  // Render fine alerts
+  console.log("Active Messages:", activeMessages);
+
+  // ----------------------
+  // Render fine alerts with ARIA live region
   return (
-    <div className="message-queue fixed top-4 right-4 h-full w-full max-w-sm pointer-events-none">
+    <div
+      className="message-queue fixed top-4 right-4 h-full w-full max-w-sm pointer-events-none"
+      role="region"
+      aria-live="polite"
+    >
       <div className="flex flex-col space-y-4 items-end pointer-events-auto max-h-screen overflow-y-auto">
         {activeMessages.map((msg) => (
           <FineAlert
@@ -278,14 +245,12 @@ export default function MessageQueue({
             law={msg.type === "legal" && msg.escalated ? msg.law ?? "" : ""}
             onClose={() => {
               dequeueMessage(msg);
-              if (msg.escalated && onFineClosed) {
-                onFineClosed(); // Revert background when fine is dismissed
-              }
+              if (msg.escalated && onFineClosed) onFineClosed();
             }}
             type={msg.type}
             subtype={msg.subtype}
             escalated={!!msg.escalated}
-            isUrgent={!!msg.urgent}
+            isUrgent={!!msg.urgent} // urgent messages now have role="alert"
           />
         ))}
       </div>
