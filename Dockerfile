@@ -13,6 +13,10 @@ RUN npm ci
 # Copy the rest of the app
 COPY . .
 
+#set environment variable for Prisma
+ARG DATABASE_URL
+ENV DATABASE_URL=$DATABASE_URL
+
 # Generate Prisma client
 RUN npx prisma generate
 
