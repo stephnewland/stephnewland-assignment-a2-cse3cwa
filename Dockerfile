@@ -4,7 +4,7 @@ FROM node:20-alpine
 # Set working directory
 WORKDIR /app
 
-# Copy only package files first
+# Copy package files first
 COPY package*.json ./
 
 # Install dependencies
@@ -16,11 +16,14 @@ COPY . .
 # Generate Prisma client
 RUN npx prisma generate
 
-# Build the app
+# Build the Next.js app
 RUN npm run build
 
-# Expose port
+# Expose the port Render will use
 EXPOSE 3000
 
-# Start app
+# Ensure NODE_ENV is production
+ENV NODE_ENV=production
+
+# Start the app
 CMD ["npm", "start"]
