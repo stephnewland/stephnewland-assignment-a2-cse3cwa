@@ -255,6 +255,37 @@ ${script}
 
   const activeTab = tabs.find((t) => t.id === activeTabId);
 
+  //Save Function after CRUD operations
+  const saveOutput = async () => {
+    if (!tabs.length) return; // nothing to save
+
+    try {
+      const htmlContent = generateHTML(); // your generated HTML
+      const response = await fetch("/api/output", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title: "Generated Tabs Output", // optionally make dynamic
+          content: htmlContent,
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert("Error saving output: " + (errorData.error || "Unknown error"));
+        return;
+      }
+
+      const data = await response.json();
+      alert(`Saved successfully! ID: ${data.id}`);
+    } catch (err) {
+      console.error("Save failed:", err);
+      alert("An unexpected error occurred while saving.");
+    }
+  };
+
   // --- Component JSX ---
   return (
     <div
@@ -492,6 +523,15 @@ ${script}
                 </button>
               </div>
             </div>
+
+            {/*Save button */}
+            <button
+              onClick={saveOutput}
+              className="py-2 px-4 border rounded-md bg-purple-600 text-white hover:bg-purple-700 transition-colors focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              disabled={!tabs.length}
+            >
+              Save Output
+            </button>
 
             {/* HTML Code Block Display */}
             {showHtml && tabs.length > 0 && (
