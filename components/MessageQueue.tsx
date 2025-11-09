@@ -93,23 +93,23 @@ export default function MessageQueue({
 
   useEffect(() => setHydrated(true), []);
 
-  const generateKey = (msg: ActiveMessage) =>
-    `${msg.id}-${msg.timestamp}-${Math.random()}`;
-
   const enqueueMessage = (msg: Message) => {
     if (!hydrated) return;
     const timestamp = Date.now();
-    setActiveMessages((prev) => [...prev, { ...msg, timestamp }]);
+    const newMessage = { ...msg, timestamp };
+    setActiveMessages((prev) => [...prev, newMessage]);
+    console.log("📩 Enqueued message:", newMessage.text);
   };
 
   const dequeueMessage = (msg: ActiveMessage) => {
     setActiveMessages((prev) =>
       prev.filter((m) => m.timestamp !== msg.timestamp)
     );
+    console.log("❌ Message closed:", msg.text);
     if (msg.escalated) onFineClosed?.();
   };
 
-  // Random messages every 20-30s
+  // 🔹 Random message scheduling (20–30s)
   useEffect(() => {
     if (!hydrated) return;
     let timeout: NodeJS.Timeout;
@@ -125,13 +125,13 @@ export default function MessageQueue({
     return () => clearTimeout(timeout);
   }, [hydrated]);
 
-  // Escalation → court fine
+  // 🔹 Escalation → Court Fine Logic
   useEffect(() => {
     if (!hydrated) return;
 
     const interval = setInterval(() => {
       const now = Date.now();
-      let courtLaw: string | undefined;
+      let triggeredLaw: string | undefined;
 
       setActiveMessages((prev) =>
         prev.map((msg) => {
@@ -140,11 +140,13 @@ export default function MessageQueue({
           const escalationTime = msg.timestamp + (msg.escalateAfter ?? 120000);
 
           if (!msg.urgent && now >= escalationTime) {
+            console.log("⚡ Marking urgent:", msg.law);
             return { ...msg, urgent: true, text: `⚡ URGENT: ${msg.text}` };
           }
 
-          if (msg.urgent && !msg.escalated && now >= escalationTime + 120000) {
-            courtLaw = msg.law;
+          if (msg.urgent && !msg.escalated && now >= escalationTime + 10000) {
+            console.log("🚨 Escalating to court fine:", msg.law);
+            onCourtTriggered?.(msg.law);
             return { ...msg, escalated: true };
           }
 
@@ -152,13 +154,24 @@ export default function MessageQueue({
         })
       );
 
-      if (courtLaw) onCourtTriggered?.(courtLaw);
+      console.log("🧾 Active messages:", activeMessages);
+
+      // 🔔 Fire court trigger if escalation happened
+      if (triggeredLaw) {
+        onCourtTriggered?.(triggeredLaw);
+      }
     }, 1000);
 
     return () => clearInterval(interval);
   }, [hydrated, onCourtTriggered]);
 
   if (!hydrated) return null;
+
+  const generateKey = (msg: ActiveMessage) =>
+    `${msg.id}-${msg.timestamp}-${Math.random()}`;
+
+  // Debug log for all active messages
+  console.log("🧾 Active messages:", activeMessages);
 
   return (
     <div className="fixed top-4 right-4 h-full max-w-sm pointer-events-none z-50">

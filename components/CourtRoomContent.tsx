@@ -139,25 +139,26 @@ export default function CourtRoomContent() {
       aria-labelledby="court-room-heading"
       className="relative min-h-screen flex-grow overflow-hidden"
     >
-      {/* Fine Background */}
+      {/* Fine Background (Full Screen) */}
       <div
-        className={`absolute inset-0 bg-center bg-no-repeat bg-cover transition-opacity duration-700 pointer-events-none ${
+        className={`fixed inset-0 bg-center bg-no-repeat bg-cover transition-opacity duration-700 pointer-events-none z-[5] ${
           isFineActive ? "opacity-100" : "opacity-0"
         }`}
         style={{ backgroundImage: `url(${fineBg})` }}
       />
-
-      {/* Red overlay */}
+      {/* Red alert overlay */}
       <div
-        className={`absolute inset-0 bg-red-500 transition-opacity duration-700 pointer-events-none ${
-          isFineActive ? "opacity-20" : "opacity-0"
+        className={`fixed inset-0 bg-red-600 transition-opacity duration-700 pointer-events-none z-[6] ${
+          isFineActive ? "opacity-40" : "opacity-0"
         }`}
+        style={{
+          mixBlendMode: "multiply",
+        }}
       />
-
       {/* Main content */}
       <div className="relative w-full flex flex-col items-center px-4 py-8 space-y-6 max-w-4xl z-20">
         <h1 id="court-room-heading" className="big-title text-center">
-          {isFineActive ? "⚖️ Court Fine Issued!" : "Court Room Simulation"}
+          Court Room Challenge
         </h1>
 
         <Timer onTimerEnd={() => {}} />

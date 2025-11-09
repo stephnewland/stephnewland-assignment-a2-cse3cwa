@@ -3,6 +3,8 @@
 import { useEffect, useState } from "react";
 import CourtRoomContent from "@/components/CourtRoomContent";
 
+const CourtRoomContentAny = CourtRoomContent as any;
+
 export default function CourtRoom() {
   // Track if fine stage is active (used for fade overlay)
   const [isFineActive, setIsFineActive] = useState(false);
@@ -71,10 +73,8 @@ export default function CourtRoom() {
           isFineActive ? "opacity-20" : "opacity-0"
         }`}
       />
-
-      {/* Content overlay */}
       <div className="relative min-h-screen w-full bg-white/60 dark:bg-black/55 flex flex-col items-center justify-center transition-colors duration-300">
-        <CourtRoomContent onCourtTriggered={handleCourtTriggered} />
+        <CourtRoomContentAny onCourtTriggered={handleCourtTriggered} />
       </div>
     </main>
   );

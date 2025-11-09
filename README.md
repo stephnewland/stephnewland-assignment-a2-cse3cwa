@@ -86,3 +86,7 @@ Building upon the initial front-end architecture from Assignment 1, **Assignment
 ### AI Generated Content
 
 - Microsoft CoPilot helped suggest what content was required to go in this README file.
+
+### NOTE
+
+- This project failedto merge and became corrupted at https://github.com/stephnewland/assignment-a1-p1-cse3cwa so was restarted here.
