@@ -33,7 +33,6 @@ export default function CourtRoomContent({
   const [stage7Code, setStage7Code] = useState(
     `document.querySelector('h1').style.color = 'blue';`
   );
-  const [stage8Code] = useState(`// Compliance checklist`);
 
   // Fine & background state
   const [isFineActive, setIsFineActive] = useState(false);

@@ -1,6 +1,8 @@
 import React from "react";
-import { render, screen, act } from "@testing-library/react";
-import MessageQueue, { messages } from "../../components/MessageQueue";
+import { render, act } from "@testing-library/react";
+import MessageQueue, {
+  messages as _messages,
+} from "../../components/MessageQueue";
 
 jest.useFakeTimers();
 

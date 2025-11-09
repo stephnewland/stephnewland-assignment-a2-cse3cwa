@@ -4,13 +4,17 @@ import { render, screen } from "@testing-library/react";
 import CourtRoomContent from "../../components/CourtRoomContent"; // relative import from test file
 
 // Mock subcomponents with relative paths
-jest.mock("../../components/MessageQueue", () => () => (
-  <div data-testid="message-queue">MessageQueue Active</div>
-));
+jest.mock("../../components/MessageQueue", () => {
+  const MessageQueueMock = () => (
+    <div data-testid="message-queue">MessageQueue Active</div>
+  );
+  return MessageQueueMock;
+});
 
-jest.mock("../../components/Timer", () => () => (
-  <div data-testid="timer">Timer Running</div>
-));
+jest.mock("../../components/Timer", () => {
+  const TimerMock = () => <div data-testid="timer">Timer Running</div>;
+  return TimerMock;
+});
 
 describe("CourtRoomContent", () => {
   test("renders all courtroom subcomponents", () => {

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useRef, useEffect } from "react";
+import { useRef } from "react";
 
 export default function Breadcrumbs() {
   const pathname = usePathname();

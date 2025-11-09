@@ -4,7 +4,6 @@ import "./globals.css";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import Breadcrumbs from "../components/Breadcrumbs";
-import React, { useEffect } from "react";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,13 +27,6 @@ export default function RootLayout({
 }) {
   const studentNumber = "21993608";
   const studentName = "Steph Newland";
-
-  useEffect(() => {
-    console.log(`[${new Date().toISOString()}] App loaded`);
-    console.log(
-      `Student Name: ${studentName}, Student Number: ${studentNumber}`
-    );
-  }, []);
 
   return (
     <html lang="en">
