@@ -82,6 +82,10 @@ Building upon the initial front-end architecture from Assignment 1, **Assignment
 - D. Matuszek, _Quick JavaScript_. Boca Raton, FL, USA: Chapman and Hall/CRC, 2023.
 - M. Simon, _JavaScript for Web Developers: Understanding the Basics_. Berkeley, CA, USA: Apress, 2023.
 - S. Hoque, _Full-Stack React Projects: Learn MERN stack development by building modern web apps using MongoDB, Express, React, and Node.js_. 2nd ed. Birmingham, UK: Packt Publishing, 2020.
+- Jest Documentation, "Jest." Available: https://devdocs.io/jest/. [Accessed: Oct. 30, 2025].
+- GeeksforGeeks, "JavaScript | Testing with Jest." Available: https://www.geeksforgeeks.org/javascript/testing-with-jest/. [Accessed: Oct. 30, 2025].
+- Jest Documentation, "Getting Started." Available: https://jestjs.io/docs/getting-started. [Accessed: Oct. 30, 2025].
+- BrowserStack, "Unit Testing of React Apps Using Jest Guide." Available: https://www.browserstack.com/guide/unit-testing-of-react-apps-using-jest. [Accessed: Oct. 30, 2025].
 
 ### AI Generated Content
 
