@@ -178,7 +178,7 @@ export default function MessageQueue({
       <div className="flex flex-col space-y-4 items-end pointer-events-auto max-h-screen overflow-y-auto">
         {activeMessages.map((msg) => (
           <FineAlert
-            key={generateKey(msg)}
+            key={`${msg.id}-${msg.timestamp}`} // stable per message
             message={msg.text}
             law={msg.type === "legal" && msg.escalated ? msg.law ?? "" : ""}
             onClose={() => dequeueMessage(msg)}
