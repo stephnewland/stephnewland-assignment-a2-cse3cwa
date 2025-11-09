@@ -55,21 +55,21 @@ Building upon the initial front-end architecture from Assignment 1, **Assignment
 - **Cloud Deployment:** Application is deployed to the **Cloud**.
 - **Lambda Function:** Added a Lambda function (or equivalent serverless function) to dynamically create pages based on the stored HTML output.
 
-| Feature                 | Implemented in File(s) (Suggested)                                             |
-| :---------------------- | :----------------------------------------------------------------------------- |
-| Court Room Interface    | `court-room/page.tsx` + `components/CourtRoomScenario.tsx`                     |
-| Scenario Timer          | `components/Timer.tsx` integrated into the scenario component                  |
-| External Message Queue  | `lib/message-service.ts` + `components/MessageDisplay.tsx`                     |
-| Laws/Fines Logic        | `lib/scenario-logic.ts` handles message ignored and fine activation            |
-| APIs for CRUD           | `app/api/data/[...route]/route.ts` (Next.js App Router)                        |
-| Database Integration    | `prisma/schema.prisma`, `lib/db.ts` (connection/query logic)                   |
-| Output Save Button      | `components/SaveButton.tsx` integrates with API/Database                       |
-| Docker Configuration    | `Dockerfile`, `.dockerignore`, `docker-compose.yml` (optional for DB)          |
-| Automated Testing       | `tests/courtroom.spec.ts`, `tests/output.spec.ts` (e.g., Playwright)           |
-| App Instrumentation     | `instrumentation.ts` (Next.js file), monitoring config                         |
-| Cloud Deployment Config | Cloud configuration files (e.g., Vercel settings, `aws-serverless-config.yml`) |
-| Lambda Function         | `serverless/generate-page.js` or `app/api/lambda/route.ts`                     |
-| Ethical Survey Tracking | `components/FeedbackTracker.tsx`                                               |
+| Feature                 | Implemented in File(s) (Suggested)                                           |
+| :---------------------- | :--------------------------------------------------------------------------- |
+| Court Room Interface    | `court-room/page.tsx` + `components/CourtRoomScenario.tsx`                   |
+| Scenario Timer          | `components/Timer.tsx` integrated into the scenario component                |
+| External Message Queue  | `lib/message-service.ts` + `components/MessageDisplay.tsx`                   |
+| Laws/Fines Logic        | `lib/scenario-logic.ts` handles message ignored and fine activation          |
+| APIs for CRUD           | `app/api/data/[...route]/route.ts` (Next.js App Router)                      |
+| Database Integration    | `prisma/schema.prisma`, `lib/db.ts` (connection/query logic)                 |
+| Output Save Button      | `components/SaveButton.tsx` integrates with API/Database                     |
+| Docker Configuration    | `Dockerfile`, `.dockerignore`, `docker-compose.yml` (optional for DB)        |
+| Automated Testing       | `tests/courtroom.spec.ts`, `tests/output.spec.ts` (e.g., Playwright)         |
+| App Instrumentation     | `instrumentation.ts` (Next.js file), monitoring config                       |
+| Cloud Deployment Config | Cloud configuration files (Rendor.com settings, `aws-serverless-config.yml`) |
+| Lambda Function         | `serverless/generate-page.js` or `app/api/lambda/route.ts`                   |
+| Ethical Survey Tracking | `components/FeedbackTracker.tsx`                                             |
 
 ---
 
@@ -94,3 +94,4 @@ Building upon the initial front-end architecture from Assignment 1, **Assignment
 ### NOTE
 
 - This project failedto merge and became corrupted at https://github.com/stephnewland/assignment-a1-p1-cse3cwa so was restarted here.
+- Render.com was used for deployment as I could not fix the Vercel deployment error caused by using babel within my Jest testing services.
