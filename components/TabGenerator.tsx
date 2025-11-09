@@ -286,6 +286,34 @@ ${script}
     }
   };
 
+  // via lambda
+  const generateDynamicHTML = async () => {
+    if (!tabs.length) return;
+
+    try {
+      const response = await fetch("/api/generate-html", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ tabs }),
+      });
+
+      if (!response.ok) throw new Error("Failed to generate HTML");
+
+      const htmlPage = await response.text();
+      console.log(htmlPage);
+
+      // open in new tab
+      const newWindow = window.open();
+      if (newWindow) {
+        newWindow.document.write(htmlPage);
+        newWindow.document.close();
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error generating dynamic HTML");
+    }
+  };
+
   // --- Component JSX ---
   return (
     <div
@@ -531,6 +559,14 @@ ${script}
               disabled={!tabs.length}
             >
               Save Output
+            </button>
+
+            {/*HTML button */}
+            <button
+              onClick={generateDynamicHTML}
+              className="py-2 px-4 border rounded-md bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+            >
+              Generate Dynamic HTML
             </button>
 
             {/* HTML Code Block Display */}
