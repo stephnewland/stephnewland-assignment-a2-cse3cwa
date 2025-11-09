@@ -1,14 +1,24 @@
 /** @type {import('ts-jest').JestConfigWithTsJest} */
 module.exports = {
-  preset: "ts-jest",
   testEnvironment: "jsdom",
+  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
+  transform: {
+    "^.+\\.(ts|tsx|js|jsx)$": "babel-jest",
+  },
   moduleNameMapper: {
     "^@components/(.*)$": "<rootDir>/components/$1",
     "^@/(.*)$": "<rootDir>/$1",
-  },
-  setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
-  transform: {
-    "^.+\\.(ts|tsx)$": "ts-jest",
+    "\\.(css|less|scss|sass)$": "identity-obj-proxy",
+    "\\.(jpg|jpeg|png|gif|webp|svg|mp4|mp3|wav|ogg)$":
+      "<rootDir>/__mocks__/fileMock.js",
   },
   moduleFileExtensions: ["ts", "tsx", "js", "jsx", "json", "node"],
+
+  transformIgnorePatterns: ["/node_modules/(?!(@?lucide-react)/)"],
+  roots: ["<rootDir>/app", "<rootDir>/components"],
+
+  testMatch: [
+    "<rootDir>/app/tests/**/*.test.(ts|tsx)",
+    "<rootDir>/components/**/*.test.(ts|tsx)",
+  ],
 };

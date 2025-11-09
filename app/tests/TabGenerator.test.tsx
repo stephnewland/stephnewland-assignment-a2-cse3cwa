@@ -11,11 +11,16 @@ global.fetch = jest.fn(() =>
   })
 ) as jest.Mock;
 
+beforeAll(() => {
+  window.alert = jest.fn();
+});
+
 describe("TabGenerator Component", () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
+  //Test 1
   test("Autogenerate tabs for 1, 3, 5 demo presets", async () => {
     render(<TabGenerator />);
 
@@ -58,6 +63,7 @@ describe("TabGenerator Component", () => {
     });
   });
 
+  //Test 2
   test("Save Output button sends POST request with generated HTML", async () => {
     render(<TabGenerator />);
 

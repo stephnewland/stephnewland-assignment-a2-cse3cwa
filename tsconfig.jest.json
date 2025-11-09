@@ -1,0 +1,14 @@
+// tsconfig.jest.json
+{
+  "extends": "./tsconfig.json", // Inherit all your other settings
+  "compilerOptions": {
+    "module": "commonjs", // Override 1: Crucial for Jest/Node.js
+    "moduleResolution": "node", // Override 2: Standard for Jest
+    "jsx": "react-jsx", // Override 3: Transforms JSX to JavaScript for testing
+    "target": "es2020", // Use a more modern target compatible with Node.js
+    "outDir": "./dist-jest", // Optional: Prevent test build from polluting your main build
+    "isolatedModules": false // Isolated modules can cause issues with test utilities
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules", "dist"] // Exclude node modules and build folders
+}
