@@ -4,7 +4,13 @@ import { useEffect, useState } from "react";
 import MessageQueue from "./MessageQueue";
 import Timer from "./Timer";
 
-export default function CourtRoomContent() {
+interface CourtRoomContentProps {
+  onCourtTriggered?: (law?: string) => void;
+}
+
+export default function CourtRoomContent({
+  onCourtTriggered,
+}: CourtRoomContentProps) {
   const [stage, setStage] = useState(1);
 
   // Stage codes
@@ -29,35 +35,17 @@ export default function CourtRoomContent() {
   );
   const [stage8Code] = useState(`// Compliance checklist`);
 
-  // Background / Fine state
-  const [deskBg, setDeskBg] = useState("/CourtRoomWorkDeskLight.png");
-  const [fineBg, setFineBg] = useState("/CourtRoomStageLight.png");
+  // Fine state
   const [isFineActive, setIsFineActive] = useState(false);
-
-  // Current law for display
   const [currentLaw, setCurrentLaw] = useState<string | null>(null);
 
-  // ---------------- Hydration & dark/light background observer
+  // Reset fine when stage changes
   useEffect(() => {
-    const updateBackground = () => {
-      const isDark = document.documentElement.classList.contains("dark");
-      setDeskBg(
-        isDark ? "/CourtRoomWorkDeskDark.png" : "/CourtRoomWorkDeskLight.png"
-      );
-      setFineBg(
-        isDark ? "/CourtRoomStageDark.png" : "/CourtRoomStageLight.png"
-      );
-    };
-
-    const observer = new MutationObserver(updateBackground);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    });
-
-    updateBackground();
-    return () => observer.disconnect();
-  }, []);
+    if (isFineActive) {
+      setIsFineActive(false);
+      setCurrentLaw(null);
+    }
+  }, [stage, isFineActive]);
 
   // ---------------- Mark Fixed validation
   const handleMarkFixed = () => {
@@ -127,148 +115,128 @@ export default function CourtRoomContent() {
   const handleCourtTriggered = (law?: string) => {
     setIsFineActive(true);
     setCurrentLaw(law ?? null);
+    if (onCourtTriggered) onCourtTriggered(law);
   };
+
   const handleFineClosed = () => {
     setIsFineActive(false);
     setCurrentLaw(null);
   };
 
   return (
-    <main
-      role="main"
-      aria-labelledby="court-room-heading"
-      className="relative min-h-screen flex-grow overflow-hidden"
-    >
-      {/* Fine Background (Full Screen) */}
-      <div
-        className={`fixed inset-0 bg-center bg-no-repeat bg-cover transition-opacity duration-700 pointer-events-none z-[0] ${
-          isFineActive ? "opacity-100" : "opacity-0"
-        }`}
-        style={{ backgroundImage: `url(${fineBg})` }}
-      />
+    <div className="relative w-full flex flex-col items-center px-4 py-8 space-y-6 max-w-4xl z-20">
+      <h1 id="court-room-heading" className="big-title text-center">
+        Court Room Challenge
+      </h1>
+      <Timer onTimerEnd={() => {}} />
+      <p className="text-lg">
+        Current Stage: <strong>{stage}</strong> / 8
+      </p>
 
-      {/* Red alert overlay */}
-      <div
-        className={`fixed inset-0 bg-red-600 transition-opacity duration-700 pointer-events-none z-[1] ${
-          isFineActive ? "opacity-40" : "opacity-0"
-        }`}
-        style={{
-          mixBlendMode: "multiply",
-        }}
-      />
-
-      {/* Main content */}
-      <div className="relative w-full flex flex-col items-center px-4 py-8 space-y-6 max-w-4xl z-20">
-        <h1 id="court-room-heading" className="big-title text-center">
-          Court Room Challenge
-        </h1>
-        <Timer onTimerEnd={() => {}} />
-        <p className="text-lg">
-          Current Stage: <strong>{stage}</strong> / 8
-        </p>
-        {/* Render stages */}
-        {stage === 1 &&
-          renderStage(
-            "🧩 Stage 1: Debugging HTML",
-            "Fix broken or missing alt attributes:",
-            stage1Code,
-            setStage1Code,
-            '💡 Hint: Include an alt="" attribute in your <img> tag.'
-          )}
-        {stage === 2 &&
-          renderStage(
-            "⚙️ Stage 2: Input Validation",
-            "Strengthen validation function:",
-            stage2Code,
-            setStage2Code,
-            "💡 Hint: Use regex or stronger checks instead of a simple '@' check."
-          )}
-        {stage === 3 &&
-          renderStage(
-            "🔐 Stage 3: Secure Login Form",
-            "Make this form secure and accessible:",
-            stage3Code,
-            setStage3Code,
-            "💡 Hint: Add <label> elements for all inputs and ensure accessibility."
-          )}
-        {stage === 4 &&
-          renderStage(
-            "🧱 Stage 4: Secure Database Connection",
-            "Review DB connection code:",
-            stage4Code,
-            setStage4Code,
-            "💡 Hint: Never hardcode passwords in your connection strings."
-          )}
-        {stage === 5 &&
-          renderStage(
-            "📦 Stage 5: Fix User Login",
-            "Ensure error handling:",
-            stage5Code,
-            setStage5Code,
-            "💡 Hint: Catch errors and provide proper feedback to users."
-          )}
-        {stage === 6 &&
-          renderStage(
-            "🔒 Stage 6: Secure Database Fixes",
-            "Protect against SQL injection:",
-            stage6Code,
-            setStage6Code,
-            "💡 Hint: Use parameterized queries or prepared statements."
-          )}
-        {stage === 7 &&
-          renderStage(
-            "📝 Stage 7: Agile Requests",
-            "Apply requested UI changes:",
-            stage7Code,
-            setStage7Code,
-            "💡 Hint: Make meaningful changes and don’t leave hardcoded values."
-          )}
-        {stage === 8 && (
-          <div className="w-full text-left bg-white/20 dark:bg-black/20 p-4 rounded-lg shadow-md">
-            <p className="text-xl font-semibold mb-2">
-              ⚖️ Stage 8: Compliance Review
-            </p>
-            <p className="mb-2">
-              Review your web app for accessibility and data protection
-              compliance:
-            </p>
-            <ul className="list-disc pl-6 text-left text-gray-200">
-              <li>Check all images have alt text.</li>
-              <li>Ensure all inputs are labeled.</li>
-              <li>Verify data is encrypted in transit (HTTPS).</li>
-              <li>Validate and sanitize all user input.</li>
-            </ul>
-            <p className="text-gray-400 mt-2">
-              💡 Hint: Think like a security auditor — fix before court fines
-              are issued!
-            </p>
-          </div>
+      {/* Render stages */}
+      {stage === 1 &&
+        renderStage(
+          "🧩 Stage 1: Debugging HTML",
+          "Fix broken or missing alt attributes:",
+          stage1Code,
+          setStage1Code,
+          '💡 Hint: Include an alt="" attribute in your <img> tag.'
         )}
-        {/* MessageQueue */}
-        <MessageQueue
-          onCourtTriggered={handleCourtTriggered}
-          onFineClosed={handleFineClosed}
-        />
-        {/* Navigation */}
-        <div className="flex gap-4 mt-4">
-          {stage > 1 && (
-            <button
-              onClick={() => setStage((prev) => Math.max(prev - 1, 1))}
-              className="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white"
-            >
-              Previous Stage
-            </button>
-          )}
-          {stage < 8 && (
-            <button
-              onClick={() => setStage((prev) => Math.min(prev + 1, 8))}
-              className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white"
-            >
-              Next Stage
-            </button>
-          )}
+      {stage === 2 &&
+        renderStage(
+          "⚙️ Stage 2: Input Validation",
+          "Strengthen validation function:",
+          stage2Code,
+          setStage2Code,
+          "💡 Hint: Use regex or stronger checks instead of a simple '@' check."
+        )}
+      {stage === 3 &&
+        renderStage(
+          "🔐 Stage 3: Secure Login Form",
+          "Make this form secure and accessible:",
+          stage3Code,
+          setStage3Code,
+          "💡 Hint: Add <label> elements for all inputs and ensure accessibility."
+        )}
+      {stage === 4 &&
+        renderStage(
+          "🧱 Stage 4: Secure Database Connection",
+          "Review DB connection code:",
+          stage4Code,
+          setStage4Code,
+          "💡 Hint: Never hardcode passwords in your connection strings."
+        )}
+      {stage === 5 &&
+        renderStage(
+          "📦 Stage 5: Fix User Login",
+          "Ensure error handling:",
+          stage5Code,
+          setStage5Code,
+          "💡 Hint: Catch errors and provide proper feedback to users."
+        )}
+      {stage === 6 &&
+        renderStage(
+          "🔒 Stage 6: Secure Database Fixes",
+          "Protect against SQL injection:",
+          stage6Code,
+          setStage6Code,
+          "💡 Hint: Use parameterized queries or prepared statements."
+        )}
+      {stage === 7 &&
+        renderStage(
+          "📝 Stage 7: Agile Requests",
+          "Apply requested UI changes:",
+          stage7Code,
+          setStage7Code,
+          "💡 Hint: Make meaningful changes and don’t leave hardcoded values."
+        )}
+      {stage === 8 && (
+        <div className="w-full text-left bg-white/20 dark:bg-black/20 p-4 rounded-lg shadow-md">
+          <p className="text-xl font-semibold mb-2">
+            ⚖️ Stage 8: Compliance Review
+          </p>
+          <p className="mb-2">
+            Review your web app for accessibility and data protection
+            compliance:
+          </p>
+          <ul className="list-disc pl-6 text-left text-gray-200">
+            <li>Check all images have alt text.</li>
+            <li>Ensure all inputs are labeled.</li>
+            <li>Verify data is encrypted in transit (HTTPS).</li>
+            <li>Validate and sanitize all user input.</li>
+          </ul>
+          <p className="text-gray-400 mt-2">
+            💡 Hint: Think like a security auditor — fix before court fines are
+            issued!
+          </p>
         </div>
+      )}
+
+      {/* MessageQueue */}
+      <MessageQueue
+        onCourtTriggered={handleCourtTriggered}
+        onFineClosed={handleFineClosed}
+      />
+
+      {/* Navigation */}
+      <div className="flex gap-4 mt-4">
+        {stage > 1 && (
+          <button
+            onClick={() => setStage((prev) => Math.max(prev - 1, 1))}
+            className="px-6 py-2 bg-gray-600 hover:bg-gray-700 rounded text-white"
+          >
+            Previous Stage
+          </button>
+        )}
+        {stage < 8 && (
+          <button
+            onClick={() => setStage((prev) => Math.min(prev + 1, 8))}
+            className="px-6 py-2 bg-blue-600 hover:bg-blue-700 rounded text-white"
+          >
+            Next Stage
+          </button>
+        )}
       </div>
-    </main>
+    </div>
   );
 }

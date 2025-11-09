@@ -86,7 +86,7 @@ export default function Timer({ onTimerEnd }: TimerProps) {
 
   return (
     <div className="px-3 py-4 bg-gray-800 text-white rounded-lg shadow-xl">
-      <h3 className="text-lg font-bold mb-3 text-center">Timer</h3>
+      <h3 className="text-lg font-bold mb-3 text-center">Sprint Timer</h3>
 
       {isSetupMode ? (
         // --- Setup Mode: Input Fields ---

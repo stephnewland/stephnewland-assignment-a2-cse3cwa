@@ -30,8 +30,8 @@ const getActionText = (
   type: "legal" | "distraction",
   subtype?: "family" | "boss" | "agile"
 ) => {
-  if (type === "legal" || subtype === "agile") return "✅ Fixed";
-  if (subtype === "family") return "👍 OK";
+  if (type === "legal") return "✅ Fixed";
+  if (subtype === "family" || subtype === "agile") return "👍 OK";
   if (subtype === "boss") return "👍 Done";
   return "✅ Fixed"; // Default
 };
