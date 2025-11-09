@@ -141,32 +141,31 @@ export default function CourtRoomContent() {
     >
       {/* Fine Background (Full Screen) */}
       <div
-        className={`fixed inset-0 bg-center bg-no-repeat bg-cover transition-opacity duration-700 pointer-events-none z-[5] ${
+        className={`fixed inset-0 bg-center bg-no-repeat bg-cover transition-opacity duration-700 pointer-events-none z-[0] ${
           isFineActive ? "opacity-100" : "opacity-0"
         }`}
         style={{ backgroundImage: `url(${fineBg})` }}
       />
+
       {/* Red alert overlay */}
       <div
-        className={`fixed inset-0 bg-red-600 transition-opacity duration-700 pointer-events-none z-[6] ${
+        className={`fixed inset-0 bg-red-600 transition-opacity duration-700 pointer-events-none z-[1] ${
           isFineActive ? "opacity-40" : "opacity-0"
         }`}
         style={{
           mixBlendMode: "multiply",
         }}
       />
+
       {/* Main content */}
       <div className="relative w-full flex flex-col items-center px-4 py-8 space-y-6 max-w-4xl z-20">
         <h1 id="court-room-heading" className="big-title text-center">
           Court Room Challenge
         </h1>
-
         <Timer onTimerEnd={() => {}} />
-
         <p className="text-lg">
           Current Stage: <strong>{stage}</strong> / 8
         </p>
-
         {/* Render stages */}
         {stage === 1 &&
           renderStage(
@@ -174,7 +173,7 @@ export default function CourtRoomContent() {
             "Fix broken or missing alt attributes:",
             stage1Code,
             setStage1Code,
-            'Include an alt="" attribute in your <img> tag.'
+            '💡 Hint: Include an alt="" attribute in your <img> tag.'
           )}
         {stage === 2 &&
           renderStage(
@@ -182,7 +181,7 @@ export default function CourtRoomContent() {
             "Strengthen validation function:",
             stage2Code,
             setStage2Code,
-            "Use regex or stronger checks."
+            "💡 Hint: Use regex or stronger checks instead of a simple '@' check."
           )}
         {stage === 3 &&
           renderStage(
@@ -190,7 +189,7 @@ export default function CourtRoomContent() {
             "Make this form secure and accessible:",
             stage3Code,
             setStage3Code,
-            "Add labels and ensure inputs are accessible."
+            "💡 Hint: Add <label> elements for all inputs and ensure accessibility."
           )}
         {stage === 4 &&
           renderStage(
@@ -198,7 +197,7 @@ export default function CourtRoomContent() {
             "Review DB connection code:",
             stage4Code,
             setStage4Code,
-            "Remove hardcoded passwords."
+            "💡 Hint: Never hardcode passwords in your connection strings."
           )}
         {stage === 5 &&
           renderStage(
@@ -206,7 +205,7 @@ export default function CourtRoomContent() {
             "Ensure error handling:",
             stage5Code,
             setStage5Code,
-            "Handle errors properly."
+            "💡 Hint: Catch errors and provide proper feedback to users."
           )}
         {stage === 6 &&
           renderStage(
@@ -214,7 +213,7 @@ export default function CourtRoomContent() {
             "Protect against SQL injection:",
             stage6Code,
             setStage6Code,
-            "Use parameterised queries."
+            "💡 Hint: Use parameterized queries or prepared statements."
           )}
         {stage === 7 &&
           renderStage(
@@ -222,20 +221,34 @@ export default function CourtRoomContent() {
             "Apply requested UI changes:",
             stage7Code,
             setStage7Code,
-            "Make meaningful code changes."
+            "💡 Hint: Make meaningful changes and don’t leave hardcoded values."
           )}
         {stage === 8 && (
           <div className="w-full text-left bg-white/20 dark:bg-black/20 p-4 rounded-lg shadow-md">
-            Compliance review stage
+            <p className="text-xl font-semibold mb-2">
+              ⚖️ Stage 8: Compliance Review
+            </p>
+            <p className="mb-2">
+              Review your web app for accessibility and data protection
+              compliance:
+            </p>
+            <ul className="list-disc pl-6 text-left text-gray-200">
+              <li>Check all images have alt text.</li>
+              <li>Ensure all inputs are labeled.</li>
+              <li>Verify data is encrypted in transit (HTTPS).</li>
+              <li>Validate and sanitize all user input.</li>
+            </ul>
+            <p className="text-gray-400 mt-2">
+              💡 Hint: Think like a security auditor — fix before court fines
+              are issued!
+            </p>
           </div>
         )}
-
         {/* MessageQueue */}
         <MessageQueue
           onCourtTriggered={handleCourtTriggered}
           onFineClosed={handleFineClosed}
         />
-
         {/* Navigation */}
         <div className="flex gap-4 mt-4">
           {stage > 1 && (

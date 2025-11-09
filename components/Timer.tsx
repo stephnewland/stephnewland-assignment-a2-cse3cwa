@@ -18,7 +18,6 @@ const formatTime = (totalSeconds: number): string => {
 };
 
 export default function Timer({ onTimerEnd }: TimerProps) {
-  // --- State and Handlers (Unchanged) ---
   const [minutesInput, setMinutesInput] = useState(5);
   const [secondsInput, setSecondsInput] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(5 * 60);
@@ -86,20 +85,18 @@ export default function Timer({ onTimerEnd }: TimerProps) {
   }, [minutesInput, secondsInput, isSetupMode, calculateTotalSeconds]);
 
   return (
-    // FIX: Reduced horizontal padding (px-3 instead of p-4)
     <div className="px-3 py-4 bg-gray-800 text-white rounded-lg shadow-xl">
-      <h3 className="text-lg font-bold mb-3">Timer</h3>
+      <h3 className="text-lg font-bold mb-3 text-center">Timer</h3>
 
       {isSetupMode ? (
         // --- Setup Mode: Input Fields ---
-        // FIX: Removed justify-center to align items to the start/left of the div
         <div className="flex space-x-2 items-center">
           <input
             type="number"
             value={String(minutesInput).padStart(2, "0")}
             onChange={handleMinutesChange}
             placeholder="MM"
-            className="w-14 p-1 text-center text-xl bg-gray-700 rounded text-white border-none focus:ring-blue-500 focus:border-blue-500" // Reduced width/padding
+            className="w-14 p-1 text-center text-xl bg-gray-700 rounded text-white border-none focus:ring-blue-500 focus:border-blue-500"
           />
           <span className="text-2xl">:</span>
           <input
@@ -107,11 +104,11 @@ export default function Timer({ onTimerEnd }: TimerProps) {
             value={String(secondsInput).padStart(2, "0")}
             onChange={handleSecondsChange}
             placeholder="SS"
-            className="w-14 p-1 text-center text-xl bg-gray-700 rounded text-white border-none focus:ring-blue-500 focus:border-blue-500" // Reduced width/padding
+            className="w-14 p-1 text-center text-xl bg-gray-700 rounded text-white border-none focus:ring-blue-500 focus:border-blue-500"
           />
           <button
             onClick={handleStart}
-            className="ml-4 px-3 py-1 bg-green-500 rounded hover:bg-green-600 font-semibold text-sm" // Reduced button size
+            className="ml-4 px-3 py-1 bg-green-500 rounded hover:bg-green-600 font-semibold text-sm"
           >
             Start
           </button>
@@ -119,11 +116,12 @@ export default function Timer({ onTimerEnd }: TimerProps) {
       ) : (
         // --- Running/Paused Mode: Display and Controls ---
         <>
+          {/* Timer Text Fully Centered */}
           <div className="text-5xl font-mono text-center mb-3">
             {formatTime(timeRemaining)}
           </div>
 
-          {/* FIX: Removed justify-center to align buttons to the left */}
+          {/* Timer Buttons (left-aligned) */}
           <div className="flex space-x-3">
             {isRunning ? (
               <button
