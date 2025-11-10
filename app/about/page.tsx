@@ -184,41 +184,76 @@ export default function AboutContent() {
             </div>
           </div>
 
-          {/* Video Tutorial Section */}
+          {/* Combined Video Tutorial Section */}
           <section
-            aria-labelledby="video-heading"
-            className="w-full mx-auto space-y-2 mt-8"
+            aria-labelledby="videos-heading"
+            className="w-full mx-auto space-y-8 mt-8"
           >
-            <div className="bg-white dark:bg-gray-700 rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow duration-300">
-              <h2
-                id="video-heading"
-                className="text-3xl font-semibold text-gray-800 dark:text-gray-200 mb-6 text-center"
-              >
-                Watch the Video Tutorial
-              </h2>
-              <div
-                className="w-full rounded-lg shadow-md overflow-hidden mx-auto"
-                style={{
-                  maxWidth: "700px",
-                  aspectRatio: "16 / 9",
-                  marginBottom: "2rem",
-                }}
-              >
-                <video
-                  controls
-                  className="w-full h-full"
-                  aria-label="Video tutorial on how to use this website"
+            <h2
+              id="videos-heading"
+              className="text-3xl font-semibold text-gray-800 dark:text-gray-200 mb-6 text-center"
+            >
+              Project Video Demonstrations
+            </h2>
+
+            {/* Grid for side-by-side videos */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+              {/* Video 1: Project Overview */}
+              <div className="bg-white dark:bg-gray-700 rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow duration-300">
+                <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-6 text-center">
+                  A1 Video Demo
+                </h3>
+                <div
+                  className="w-full rounded-lg shadow-md overflow-hidden mx-auto"
+                  style={{
+                    aspectRatio: "16 / 9",
+                    marginBottom: "2rem",
+                  }}
                 >
-                  <source src="/demo.mp4" type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
+                  <video
+                    controls
+                    className="w-full h-full"
+                    aria-label="Video tutorial on how to use this website"
+                  >
+                    <source src="/demo.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+                <p className="text-gray-600 dark:text-gray-300 text-center">
+                  This video demonstrates how to use the Tab Generator to create
+                  accessible HTML5 tab structures that can be deployed directly
+                  to Moodle LMS.
+                  <SpeedInsights />
+                </p>
               </div>
-              <p className="text-gray-600 dark:text-gray-300 text-center max-w-2xl mx-auto">
-                This video demonstrates how to use the Tab Generator to create
-                accessible HTML5 tab structures that can be deployed directly to
-                Moodle LMS.
-                <SpeedInsights />
-              </p>
+
+              {/* Video 2: A2 Assignment Demo Video */}
+              <div className="bg-white dark:bg-gray-700 rounded-lg shadow-lg p-8 hover:shadow-xl transition-shadow duration-300">
+                <h3 className="text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-6 text-center">
+                  A2 Video Demo
+                </h3>
+                <div
+                  className="w-full rounded-lg shadow-md overflow-hidden mx-auto"
+                  style={{
+                    aspectRatio: "16 / 9",
+                    marginBottom: "2rem",
+                  }}
+                >
+                  <video
+                    controls
+                    className="w-full h-full"
+                    aria-label="Video tutorial on how to use this website"
+                  >
+                    <source src="/A2demo.mp4" type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                </div>
+                {/* Optional: Add a description for the A2 video if needed */}
+                <p className="text-gray-600 dark:text-gray-300 text-center">
+                  This video provides a demonstration of the features developed
+                  for the A2 assignment in the Court Room Scenario.
+                </p>
+              </div>
             </div>
           </section>
         </div>
